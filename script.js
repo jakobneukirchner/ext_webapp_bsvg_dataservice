@@ -1,5 +1,6 @@
 const GITHUB_BASE = "https://raw.githubusercontent.com/jakobneukirchner/ext_webapp_bsvg/main/";
 
+// Lädt die Dropdowns für Ziel, Via und Sonderansagen
 async function loadDropdowns() {
     const zielSelect = document.getElementById("zielSelect");
     const viaSelect = document.getElementById("viaSelect");
@@ -10,18 +11,18 @@ async function loadDropdowns() {
         .then(res => res.json());
     ziele.forEach(file => {
         if (file.name.endsWith(".mp3")) {
-            const name = decodeURIComponent(file.name.replace(".mp3", ""));
-            zielSelect.add(new Option(name, name + ".mp3"));
+            const name = decodeURIComponent(file.name);
+            zielSelect.add(new Option(name, name)); // Endung wird jetzt angezeigt
         }
     });
 
-    // Via laden (behandle es genauso wie das Ziel, inklusive der Datei-Endung)
+    // Via laden (jetzt mit der Datei-Endung .mp3)
     const vias = await fetch("https://api.github.com/repos/jakobneukirchner/ext_webapp_bsvg/contents/via")
         .then(res => res.json());
     vias.forEach(file => {
         if (file.name.endsWith(".mp3")) {
             const name = decodeURIComponent(file.name);
-            viaSelect.add(new Option(name, name));
+            viaSelect.add(new Option(name, name)); // Endung wird jetzt angezeigt
         }
     });
 
@@ -30,8 +31,8 @@ async function loadDropdowns() {
         .then(res => res.json());
     sonder.forEach(file => {
         if (file.name.endsWith(".mp3")) {
-            const name = decodeURIComponent(file.name.replace(".mp3", ""));
-            sonderSelect.add(new Option(name, name + ".mp3"));
+            const name = decodeURIComponent(file.name);
+            sonderSelect.add(new Option(name, name)); // Endung wird jetzt angezeigt
         }
     });
 }
