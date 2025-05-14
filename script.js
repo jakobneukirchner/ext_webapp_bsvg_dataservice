@@ -5,10 +5,6 @@ async function loadDropdowns() {
     const viaSelect = document.getElementById("viaSelect");
     const sonderSelect = document.getElementById("sonderSelect");
 
-    // Standardoptionen einfügen
-    viaSelect.add(new Option("–", ""));
-    sonderSelect.add(new Option("–", ""));
-
     // Ziele laden
     const ziele = await fetch("https://api.github.com/repos/jakobneukirchner/ext_webapp_bsvg/contents/Ziele")
         .then(res => res.json());
@@ -40,6 +36,7 @@ async function loadDropdowns() {
     });
 }
 
+// Funktion zum Abspielen einer Sequenz von Audiodateien
 function playSequence(urls, onComplete) {
     if (urls.length === 0) {
         if (onComplete) onComplete();
@@ -50,6 +47,7 @@ function playSequence(urls, onComplete) {
     audio.onended = () => playSequence(urls.slice(1), onComplete);
 }
 
+// Funktion, um die vollständige Ansage abzuspielen
 function playAnnouncement() {
     const line = document.getElementById("lineInput").value.trim();
     const ziel = document.getElementById("zielSelect").value;
@@ -70,13 +68,13 @@ function playAnnouncement() {
 
     playSequence(urls, () => {
         const viaUrls = [];
-        if (via && via !== "") {
+        if (via) {
             viaUrls.push(GITHUB_BASE + "Fragmente/über.mp3");
             viaUrls.push(GITHUB_BASE + "via/" + encodeURIComponent(via) + ".mp3");
         }
         playSequence(viaUrls, () => {
             const sonderUrls = [];
-            if (sonder && sonder !== "") {
+            if (sonder) {
                 sonderUrls.push(GITHUB_BASE + "Hinweise/" + encodeURIComponent(sonder) + ".mp3");
             }
             playSequence(sonderUrls);
@@ -84,15 +82,33 @@ function playAnnouncement() {
     });
 }
 
+// Funktion, um nur die Sonderansage abzuspielen
 function playOnlySonderansage() {
     const sonder = document.getElementById("sonderSelect").value;
-    if (sonder && sonder !== "") {
+    if (sonder) {
         const url = GITHUB_BASE + "Hinweise/" + encodeURIComponent(sonder) + ".mp3";
         playSequence([url]);
     }
 }
 
+// Funktion, um nur die Via-Ansage abzuspielen
+function playOnlyVia() {
+    const via = document.getElementById("viaSelect").value;
+    if (via) {
+        const viaUrls = [
+            GITHUB_BASE + "Fragmente/über.mp3",
+            GITHUB_BASE + "via/" + encodeURIComponent(via) + ".mp3"
+        ];
+        playSequence(viaUrls);
+    } else {
+        alert("Bitte wählen Sie eine Via-Haltestelle aus.");
+    }
+}
+
+// Event-Listener für die Buttons
 document.getElementById("playBtn").addEventListener("click", playAnnouncement);
 document.getElementById("sonderBtn").addEventListener("click", playOnlySonderansage);
+document.getElementById("viaBtn").addEventListener("click", playOnlyVia);
 
+// Dropdowns laden (Ziele, Via, Sonderansagen)
 loadDropdowns();
