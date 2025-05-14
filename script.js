@@ -15,7 +15,7 @@ async function loadDropdowns() {
         }
     });
 
-    // Via laden (jetzt korrekt auf "via" Verzeichnis zugreifen)
+    // Via laden (jetzt genauso wie Ziele behandeln)
     const vias = await fetch("https://api.github.com/repos/jakobneukirchner/ext_webapp_bsvg/contents/via")
         .then(res => res.json());
     vias.forEach(file => {
@@ -70,7 +70,7 @@ function playAnnouncement() {
         const viaUrls = [];
         if (via) {
             viaUrls.push(GITHUB_BASE + "Fragmente/über.mp3");
-            viaUrls.push(GITHUB_BASE + "via/" + encodeURIComponent(via) + ".mp3");  // Korrekte URL für Via
+            viaUrls.push(GITHUB_BASE + "via/" + encodeURIComponent(via) + ".mp3");  // Behandle "via" wie "ziel"
         }
         playSequence(viaUrls, () => {
             const sonderUrls = [];
@@ -97,7 +97,7 @@ function playOnlyVia() {
     if (via) {
         const viaUrls = [
             GITHUB_BASE + "Fragmente/über.mp3",
-            GITHUB_BASE + "via/" + encodeURIComponent(via) + ".mp3"  // Korrekte URL für Via
+            GITHUB_BASE + "via/" + encodeURIComponent(via) + ".mp3"  // Behandle "via" wie "ziel"
         ];
         playSequence(viaUrls);
     } else {
