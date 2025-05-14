@@ -11,16 +11,16 @@ async function loadDropdowns() {
     ziele.forEach(file => {
         if (file.name.endsWith(".mp3")) {
             const name = decodeURIComponent(file.name.replace(".mp3", ""));
-            zielSelect.add(new Option(name, name));
+            zielSelect.add(new Option(name, name + ".mp3"));
         }
     });
 
-    // Via laden (behandle es genauso wie das Ziel)
+    // Via laden (behandle es genauso wie das Ziel, inklusive der Datei-Endung)
     const vias = await fetch("https://api.github.com/repos/jakobneukirchner/ext_webapp_bsvg/contents/via")
         .then(res => res.json());
     vias.forEach(file => {
         if (file.name.endsWith(".mp3")) {
-            const name = decodeURIComponent(file.name.replace(".mp3", ""));
+            const name = decodeURIComponent(file.name);
             viaSelect.add(new Option(name, name));
         }
     });
@@ -31,7 +31,7 @@ async function loadDropdowns() {
     sonder.forEach(file => {
         if (file.name.endsWith(".mp3")) {
             const name = decodeURIComponent(file.name.replace(".mp3", ""));
-            sonderSelect.add(new Option(name, name));
+            sonderSelect.add(new Option(name, name + ".mp3"));
         }
     });
 }
@@ -68,8 +68,8 @@ function playAnnouncement() {
     urls.push(GITHUB_BASE + "Fragmente/nach.mp3");
     urls.push(GITHUB_BASE + "Ziele/" + encodeURIComponent(ziel) + ".mp3");
 
-    // Via-Haltestelle (falls angegeben)
-    if (via) {
+    // Überprüfen, ob via ausgewählt ist oder "keine.mp3" gewählt wurde
+    if (via && via !== "keine.mp3") {
         urls.push(GITHUB_BASE + "Fragmente/über.mp3");
         urls.push(GITHUB_BASE + "via/" + encodeURIComponent(via) + ".mp3");
     }
@@ -97,14 +97,14 @@ function playOnlySonderansage() {
 // Funktion, um nur die Via-Ansage abzuspielen
 function playOnlyVia() {
     const via = document.getElementById("viaSelect").value;
-    if (via) {
+    if (via && via !== "keine.mp3") {
         const viaUrls = [
             GITHUB_BASE + "Fragmente/über.mp3",
             GITHUB_BASE + "via/" + encodeURIComponent(via) + ".mp3"
         ];
         playSequence(viaUrls);
     } else {
-        alert("Bitte wählen Sie eine Via-Haltestelle aus.");
+        alert("Bitte wählen Sie eine gültige Via-Haltestelle aus.");
     }
 }
 
