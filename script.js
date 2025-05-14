@@ -66,8 +66,13 @@ function playAnnouncement() {
     }
 
     // "nach" und Ziel
-    urls.push(GITHUB_BASE + "Fragmente/nach.mp3");
-    urls.push(GITHUB_BASE + "Ziele/" + encodeURIComponent(ziel) + ".mp3");
+    if (ziel) {
+        urls.push(GITHUB_BASE + "Fragmente/nach.mp3");
+        urls.push(GITHUB_BASE + "Ziele/" + encodeURIComponent(ziel) + ".mp3");
+    } else {
+        alert("Bitte wählen Sie ein Ziel aus.");
+        return;
+    }
 
     // Überprüfen, ob via ausgewählt ist oder "keine.mp3" gewählt wurde
     if (via && via !== "keine.mp3") {
