@@ -1,34 +1,122 @@
-
 <!DOCTYPE html>
 <html lang="de">
 <head>
     <meta charset="UTF-8">
-    <title>BSVG Ansagen-Generator</title>
+    <title>Ansagen-Generator</title>
     <link rel="stylesheet" href="style.css">
+        body { font-family: Arial, sans-serif; padding: 20px; }
+        input, select, button { margin: 8px 0; padding: 6px; font-size: 16px; }
+    </style>
 </head>
 <body>
-<div class="container">
-    <h2>BSVG Ansagen-Generator</h2>
-    <label for="lineInput">Linie (optional):</label>
-    <input type="text" id="lineInput" placeholder="z. B. 3">
+    <h1>Ansagen-Generator</h1>
 
-    <label for="zielSelect">Ziel:</label>
-    <select id="zielSelect"></select>
+    <label>Linie (optional):</label><br>
+    <input type="text" id="lineInput" placeholder="z. B. 3"><br>
 
-    <label for="viaSelect">Via (optional):</label>
+    <label>Fahrziel:</label><br>
+    <select id="zielSelect"></select><br>
+
+    <label>Via (optional):</label><br>
     <select id="viaSelect">
         <option value="">–</option>
-    </select>
+    </select><br>
+
+    <label>Sonderansage (optional):</label><br>
+    <select id="sonderSelect">
+        <option value="">–</option>
+    </select><br><br>
 
     <button onclick="playAnnouncement()">Ansage abspielen</button>
+    <button onclick="playOnlySonderansage()">Nur Sonderansage</button>
 
-        <marquee width="100%" direction="left" height="100px">
-Aktuell funktioniert die "via" Auswahl nicht, wir arbeiten an einer Lösung des Problems ### Der Abruf von Sonderansagen ist bald verfügbar.
-    </marquee>
-</div>
+    <script>
+        const GITHUB_BASE = "https://raw.githubusercontent.com/jakobneukirchner/ext_webapp_bsvg/main/";
 
+        async function loadZiele() {
+            const zielSelect = document.getElementById("zielSelect");
+            const viaSelect = document.getElementById("viaSelect");
 
-    
-<script src="script.js"></script>
+            const zielRes = await fetch("https://api.github.com/repos/jakobneukirchner/ext_webapp_bsvg/contents/Ziele");
+            const zielData = await zielRes.json();
+
+            zielData.forEach(file => {
+                if (file.name.endsWith(".mp3")) {
+                    const name = decodeURIComponent(file.name.replace(".mp3", ""));
+                    zielSelect.add(new Option(name, name));
+                }
+            });
+
+            const viaRes = await fetch("https://api.github.com/repos/jakobneukirchner/ext_webapp_bsvg/contents/via");
+            const viaData = await viaRes.json();
+
+            viaData.forEach(file => {
+                if (file.name.endsWith(".mp3")) {
+                    const name = decodeURIComponent(file.name.replace(".mp3", ""));
+                    viaSelect.add(new Option(name, name));
+                }
+            });
+        }
+
+        async function loadSonderansagen() {
+            const sonderSelect = document.getElementById("sonderSelect");
+            const response = await fetch("https://api.github.com/repos/jakobneukirchner/ext_webapp_bsvg/contents/Hinweise");
+            const data = await response.json();
+
+            data.forEach(file => {
+                if (file.name.endsWith(".mp3")) {
+                    const name = decodeURIComponent(file.name.replace(".mp3", ""));
+                    sonderSelect.add(new Option(name, name));
+                }
+            });
+        }
+
+        function playAnnouncement() {
+            const line = document.getElementById("lineInput").value.trim();
+            const ziel = document.getElementById("zielSelect").value;
+            const via = document.getElementById("viaSelect").value;
+            const sonder = document.getElementById("sonderSelect").value;
+
+            const urls = [];
+
+            if (line) {
+                urls.push(GITHUB_BASE + "Fragmente/linie.mp3");
+                urls.push(GITHUB_BASE + "Nummern/line_number_end/" + encodeURIComponent(line) + ".mp3");
+            } else {
+                urls.push(GITHUB_BASE + "Fragmente/zug.mp3");
+            }
+
+            urls.push(GITHUB_BASE + "Fragmente/nach.mp3");
+            urls.push(GITHUB_BASE + "Ziele/" + encodeURIComponent(ziel) + ".mp3");
+
+            if (via) {
+                urls.push(GITHUB_BASE + "Fragmente/über.mp3");
+                urls.push(GITHUB_BASE + "via/" + encodeURIComponent(via) + ".mp3");
+            }
+
+            if (sonder) {
+                urls.push(GITHUB_BASE + "Hinweise/" + encodeURIComponent(sonder) + ".mp3");
+            }
+
+            playSequence(urls);
+        }
+
+        function playOnlySonderansage() {
+            const sonder = document.getElementById("sonderSelect").value;
+            if (!sonder) return;
+            const audio = new Audio(GITHUB_BASE + "Hinweise/" + encodeURIComponent(sonder) + ".mp3");
+            audio.play();
+        }
+
+        function playSequence(urls) {
+            if (urls.length === 0) return;
+            const audio = new Audio(urls[0]);
+            audio.play();
+            audio.onended = () => playSequence(urls.slice(1));
+        }
+
+        loadZiele();
+        loadSonderansagen();
+    </script>
 </body>
 </html>
