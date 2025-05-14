@@ -15,7 +15,7 @@ async function loadDropdowns() {
         }
     });
 
-    // Via laden (jetzt genauso wie Ziele behandeln)
+    // Via laden (behandle es genauso wie das Ziel)
     const vias = await fetch("https://api.github.com/repos/jakobneukirchner/ext_webapp_bsvg/contents/via")
         .then(res => res.json());
     vias.forEach(file => {
@@ -56,6 +56,7 @@ function playAnnouncement() {
 
     const urls = [];
 
+    // Linie-Nummer einfügen, wenn vorhanden
     if (line) {
         urls.push(GITHUB_BASE + "Fragmente/linie.mp3");
         urls.push(GITHUB_BASE + "Nummern/line_number_end/" + encodeURIComponent(line) + ".mp3");
@@ -63,23 +64,25 @@ function playAnnouncement() {
         urls.push(GITHUB_BASE + "Fragmente/zug.mp3");
     }
 
+    // "nach" und Ziel
     urls.push(GITHUB_BASE + "Fragmente/nach.mp3");
     urls.push(GITHUB_BASE + "Ziele/" + encodeURIComponent(ziel) + ".mp3");
 
-    playSequence(urls, () => {
-        const viaUrls = [];
-        if (via) {
-            viaUrls.push(GITHUB_BASE + "Fragmente/über.mp3");
-            viaUrls.push(GITHUB_BASE + "via/" + encodeURIComponent(via) + ".mp3");  // Behandle "via" wie "ziel"
-        }
-        playSequence(viaUrls, () => {
-            const sonderUrls = [];
-            if (sonder) {
-                sonderUrls.push(GITHUB_BASE + "Hinweise/" + encodeURIComponent(sonder) + ".mp3");
-            }
+    // Via-Haltestelle (falls angegeben)
+    if (via) {
+        urls.push(GITHUB_BASE + "Fragmente/über.mp3");
+        urls.push(GITHUB_BASE + "via/" + encodeURIComponent(via) + ".mp3");
+    }
+
+    // Sonderansage (falls angegeben)
+    if (sonder) {
+        playSequence(urls, () => {
+            const sonderUrls = [GITHUB_BASE + "Hinweise/" + encodeURIComponent(sonder) + ".mp3"];
             playSequence(sonderUrls);
         });
-    });
+    } else {
+        playSequence(urls);
+    }
 }
 
 // Funktion, um nur die Sonderansage abzuspielen
@@ -97,7 +100,7 @@ function playOnlyVia() {
     if (via) {
         const viaUrls = [
             GITHUB_BASE + "Fragmente/über.mp3",
-            GITHUB_BASE + "via/" + encodeURIComponent(via) + ".mp3"  // Behandle "via" wie "ziel"
+            GITHUB_BASE + "via/" + encodeURIComponent(via) + ".mp3"
         ];
         playSequence(viaUrls);
     } else {
