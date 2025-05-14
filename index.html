@@ -1,0 +1,28 @@
+
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <title>BSVG Ansagen-Generator</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div class="container">
+    <h2>BSVG Ansagen-Generator</h2>
+    <label for="lineInput">Linie (optional):</label>
+    <input type="text" id="lineInput" placeholder="z. B. 3">
+
+    <label for="zielSelect">Ziel:</label>
+    <select id="zielSelect"></select>
+
+    <label for="viaSelect">Via (optional):</label>
+    <select id="viaSelect">
+        <option value="">–</option>
+    </select>
+
+    <button onclick="playAnnouncement()">Ansage abspielen</button>
+</div>
+
+<script src="script.js"></script>
+</body>
+</html>
