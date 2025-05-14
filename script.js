@@ -1,32 +1,34 @@
 const GITHUB_BASE = "https://raw.githubusercontent.com/jakobneukirchner/ext_webapp_bsvg/main/";
 
-async function loadOptions() {
-    const zielApi = "https://api.github.com/repos/jakobneukirchner/ext_webapp_bsvg/contents/Ziele";
-    const viaApi = "https://api.github.com/repos/jakobneukirchner/ext_webapp_bsvg/contents/via";
-    const sonderApi = "https://api.github.com/repos/jakobneukirchner/ext_webapp_bsvg/contents/Hinweise";
-
+async function loadDropdowns() {
     const zielSelect = document.getElementById("zielSelect");
     const viaSelect = document.getElementById("viaSelect");
     const sonderSelect = document.getElementById("sonderSelect");
 
-    const zielData = await fetch(zielApi).then(res => res.json());
-    zielData.forEach(file => {
+    // Ziele laden
+    const ziele = await fetch("https://api.github.com/repos/jakobneukirchner/ext_webapp_bsvg/contents/Ziele")
+        .then(res => res.json());
+    ziele.forEach(file => {
         if (file.name.endsWith(".mp3")) {
             const name = decodeURIComponent(file.name.replace(".mp3", ""));
             zielSelect.add(new Option(name, name));
         }
     });
 
-    const viaData = await fetch(viaApi).then(res => res.json());
-    viaData.forEach(file => {
+    // Via laden
+    const vias = await fetch("https://api.github.com/repos/jakobneukirchner/ext_webapp_bsvg/contents/via")
+        .then(res => res.json());
+    vias.forEach(file => {
         if (file.name.endsWith(".mp3")) {
             const name = decodeURIComponent(file.name.replace(".mp3", ""));
             viaSelect.add(new Option(name, name));
         }
     });
 
-    const sonderData = await fetch(sonderApi).then(res => res.json());
-    sonderData.forEach(file => {
+    // Sonderansagen laden
+    const sonder = await fetch("https://api.github.com/repos/jakobneukirchner/ext_webapp_bsvg/contents/Hinweise")
+        .then(res => res.json());
+    sonder.forEach(file => {
         if (file.name.endsWith(".mp3")) {
             const name = decodeURIComponent(file.name.replace(".mp3", ""));
             sonderSelect.add(new Option(name, name));
@@ -34,11 +36,14 @@ async function loadOptions() {
     });
 }
 
-function playSequence(urls) {
-    if (urls.length === 0) return;
+function playSequence(urls, onComplete) {
+    if (urls.length === 0) {
+        if (onComplete) onComplete();
+        return;
+    }
     const audio = new Audio(urls[0]);
     audio.play();
-    audio.onended = () => playSequence(urls.slice(1));
+    audio.onended = () => playSequence(urls.slice(1), onComplete);
 }
 
 function playAnnouncement() {
@@ -59,23 +64,31 @@ function playAnnouncement() {
     urls.push(GITHUB_BASE + "Fragmente/nach.mp3");
     urls.push(GITHUB_BASE + "Ziele/" + encodeURIComponent(ziel) + ".mp3");
 
-    if (via) {
-        urls.push(GITHUB_BASE + "Fragmente/über.mp3");
-        urls.push(GITHUB_BASE + "via/" + encodeURIComponent(via) + ".mp3");
-    }
-
-    if (sonder) {
-        urls.push(GITHUB_BASE + "Hinweise/" + encodeURIComponent(sonder) + ".mp3");
-    }
-
-    playSequence(urls);
+    playSequence(urls, () => {
+        const viaUrls = [];
+        if (via) {
+            viaUrls.push(GITHUB_BASE + "Fragmente/über.mp3");
+            viaUrls.push(GITHUB_BASE + "via/" + encodeURIComponent(via) + ".mp3");
+        }
+        playSequence(viaUrls, () => {
+            const sonderUrls = [];
+            if (sonder) {
+                sonderUrls.push(GITHUB_BASE + "Hinweise/" + encodeURIComponent(sonder) + ".mp3");
+            }
+            playSequence(sonderUrls);
+        });
+    });
 }
 
 function playOnlySonderansage() {
     const sonder = document.getElementById("sonderSelect").value;
-    if (!sonder) return;
-    const url = GITHUB_BASE + "Hinweise/" + encodeURIComponent(sonder) + ".mp3";
-    playSequence([url]);
+    if (sonder) {
+        const url = GITHUB_BASE + "Hinweise/" + encodeURIComponent(sonder) + ".mp3";
+        playSequence([url]);
+    }
 }
 
-loadOptions();
+document.getElementById("playBtn").addEventListener("click", playAnnouncement);
+document.getElementById("sonderBtn").addEventListener("click", playOnlySonderansage);
+
+loadDropdowns();
