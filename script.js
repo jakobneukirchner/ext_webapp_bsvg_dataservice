@@ -1,21 +1,35 @@
-
 const GITHUB_BASE = "https://raw.githubusercontent.com/jakobneukirchner/ext_webapp_bsvg/main/";
 
-async function loadZiele() {
-    const apiUrl = "https://api.github.com/repos/jakobneukirchner/ext_webapp_bsvg/contents/Ziele";
+async function loadOptions() {
+    const zielApi = "https://api.github.com/repos/jakobneukirchner/ext_webapp_bsvg/contents/Ziele";
+    const viaApi = "https://api.github.com/repos/jakobneukirchner/ext_webapp_bsvg/contents/via";
+    const sonderApi = "https://api.github.com/repos/jakobneukirchner/ext_webapp_bsvg/contents/Hinweise";
+
     const zielSelect = document.getElementById("zielSelect");
     const viaSelect = document.getElementById("viaSelect");
+    const sonderSelect = document.getElementById("sonderSelect");
 
-    const response = await fetch(apiUrl);
-    const data = await response.json();
-
-    data.forEach(file => {
+    const zielData = await fetch(zielApi).then(res => res.json());
+    zielData.forEach(file => {
         if (file.name.endsWith(".mp3")) {
             const name = decodeURIComponent(file.name.replace(".mp3", ""));
-            const option1 = new Option(name, name);
-            const option2 = new Option(name, name);
-            zielSelect.add(option1);
-            viaSelect.add(option2);
+            zielSelect.add(new Option(name, name));
+        }
+    });
+
+    const viaData = await fetch(viaApi).then(res => res.json());
+    viaData.forEach(file => {
+        if (file.name.endsWith(".mp3")) {
+            const name = decodeURIComponent(file.name.replace(".mp3", ""));
+            viaSelect.add(new Option(name, name));
+        }
+    });
+
+    const sonderData = await fetch(sonderApi).then(res => res.json());
+    sonderData.forEach(file => {
+        if (file.name.endsWith(".mp3")) {
+            const name = decodeURIComponent(file.name.replace(".mp3", ""));
+            sonderSelect.add(new Option(name, name));
         }
     });
 }
@@ -31,6 +45,7 @@ function playAnnouncement() {
     const line = document.getElementById("lineInput").value.trim();
     const ziel = document.getElementById("zielSelect").value;
     const via = document.getElementById("viaSelect").value;
+    const sonder = document.getElementById("sonderSelect").value;
 
     const urls = [];
 
@@ -46,10 +61,21 @@ function playAnnouncement() {
 
     if (via) {
         urls.push(GITHUB_BASE + "Fragmente/über.mp3");
-        urls.push(GITHUB_BASE + "Ziele/" + encodeURIComponent(via) + ".mp3");
+        urls.push(GITHUB_BASE + "via/" + encodeURIComponent(via) + ".mp3");
+    }
+
+    if (sonder) {
+        urls.push(GITHUB_BASE + "Hinweise/" + encodeURIComponent(sonder) + ".mp3");
     }
 
     playSequence(urls);
 }
 
-loadZiele();
+function playOnlySonderansage() {
+    const sonder = document.getElementById("sonderSelect").value;
+    if (!sonder) return;
+    const url = GITHUB_BASE + "Hinweise/" + encodeURIComponent(sonder) + ".mp3";
+    playSequence([url]);
+}
+
+loadOptions();
