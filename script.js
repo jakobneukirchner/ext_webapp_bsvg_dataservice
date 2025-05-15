@@ -175,8 +175,9 @@ function setupGongCheckboxListener() {
                  } else {
                      console.warn("Gong-Checkbox angehakt, aber keine Gong-Dateien verfügbar.");
                      // Checkbox eventuell wieder deaktivieren oder eine Meldung anzeigen
-                     // this.checked = false;
-                     alert("Es wurden keine Gong-Dateien gefunden oder geladen."); // Deutlichere Meldung
+                     this.checked = false; // Deaktiviert die Checkbox, wenn keine Gongs da sind
+                     alert("Es wurden keine Gong-Dateien gefunden oder geladen. Die Option wird deaktiviert."); // Deutlichere Meldung
+                     container.style.display = 'none'; // Verstecke das Dropdown wieder
                  }
             } else {
                 container.style.display = 'none'; // Verstecke das Dropdown
@@ -275,27 +276,57 @@ function playAnnouncement() {
 
 }
 
-// Funktion, um nur die Sonderansage abzuspielen
+// Funktion, um nur die Sonderansage abzuspielen (Gong(optional) -> Sonder)
 function playOnlySonderansage() {
     const sonder = document.getElementById("sonderSelect").value;
+
+    const includeGong = document.getElementById("includeGongCheckbox").checked; // Zustand der Checkbox
+    const selectedGong = document.getElementById("gongSelect").value; // Ausgewählter Gong-Wert
+
+    const urls = [];
+
+    // 0. Gong (optional) - Zuerst hinzufügen!
+    if (includeGong && selectedGong && selectedGong !== "") {
+        urls.push(GITHUB_BASE + "gong/" + encodeURIComponent(selectedGong)); // Gong-URL hinzufügen
+    } else if (includeGong && (!selectedGong || selectedGong === "")) {
+         console.warn("Gong Option aktiviert, aber kein Gong ausgewählt. Gong wird übersprungen.");
+    }
+
+
+    // 1. Sonderansage (obligatorisch für diese spezifische Ansage)
     // Prüfen, ob Sonderansage ausgewählt wurde (nicht der leere Standard-Value)
     if (sonder && sonder !== "") {
          // Der Sonder-Wert enthält bereits die .mp3-Endung
-        const url = GITHUB_BASE + "Hinweise/" + encodeURIComponent(sonder);
-        console.log("Spiele nur Sonderansage ab:", url);
-        startPlayback([url]); // Einzelne URL als Sequenz starten
+        urls.push(GITHUB_BASE + "Hinweise/" + encodeURIComponent(sonder));
     } else {
-        alert("Bitte wählen Sie eine Sonderansage aus.");
+        alert("Bitte wählen Sie eine Sonderansage aus, um diese abzuspielen.");
+        console.warn("'Nur Sonderansage' abgebrochen: Keine Sonderansage ausgewählt.");
+        return; // Abbruch, wenn keine Sonderansage gewählt ist
     }
+
+    console.log("Konstruierte URLs für 'Nur Sonderansage':", urls);
+
+    startPlayback(urls); // Starten Sie die Sequenz (Gong + Sonder)
 }
 
-// Funktion, um nur die Via-Ansage abzuspielen (Linie/Zug -> über -> Via)
+// Funktion, um nur die Via-Ansage abzuspielen (Gong(optional) -> Linie/Zug -> über -> Via)
 function playOnlyVia() {
     const line = document.getElementById("lineInput").value.trim();
     const via = document.getElementById("viaSelect").value; // Wert enthält bereits .mp3
 
+    const includeGong = document.getElementById("includeGongCheckbox").checked; // Zustand der Checkbox
+    const selectedGong = document.getElementById("gongSelect").value; // Ausgewählter Gong-Wert
+
+
      // Array für die URLs dieser spezifischen Ansage
     const urls = [];
+
+    // 0. Gong (optional) - Zuerst hinzufügen!
+    if (includeGong && selectedGong && selectedGong !== "") {
+        urls.push(GITHUB_BASE + "gong/" + encodeURIComponent(selectedGong)); // Gong-URL hinzufügen
+    } else if (includeGong && (!selectedGong || selectedGong === "")) {
+         console.warn("Gong Option aktiviert, aber kein Gong ausgewählt. Gong wird übersprungen.");
+    }
 
     // 1. Linie oder Zug (immer dabei, auch wenn keine Linie eingegeben)
      if (line) {
