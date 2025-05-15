@@ -4,166 +4,153 @@
 }
 
 :root {
-    /* Eigene Farbpalette */
-    --primary-color: #5a8dee; /* Ein angenehmer Blauton */
-    --primary-color-dark: #4a7ad2; /* Dunkler für Hover */
-    --background-color: #f8f9fa; /* Sehr heller Hintergrund */
+    /* Eigene Farbpalette (einfachere Version) */
+    --primary-color: #007bff; /* Blau */
+    --primary-color-dark: #0056b3; /* Dunkler für Hover */
+    --background-color: #f4f7f6; /* Heller Hintergrund */
     --surface-color: #ffffff; /* Weiß für den Haupt-Container */
-    --text-color: #343a40; /* Dunkles Grau für Text */
-    --text-color-light: #6c757d; /* Helleres Grau für Platzhalter/schwachen Text */
+    --text-color: #333; /* Dunkles Grau für Text */
+    --text-color-light: #6c757d; /* Helleres Grau für Platzhalter */
     --border-color: #ced4da; /* Heller Rand */
     --error-color: #dc3545; /* Rot für Fehler */
-    --focus-outline-color: rgba(90, 141, 238, 0.5); /* Halbtransparentes Blau für Fokus */
-    --on-primary-color: #ffffff; /* Text auf Primärfarbe (explizit hinzugefügt) */
+    --focus-outline-color: rgba(0, 123, 255, 0.25); /* Halbtransparentes Blau für Fokus */
+    --on-primary-color: #ffffff; /* Text auf Primärfarbe */
 }
 
+
 body {
-    /* Nutzt Kanit von Google Fonts (muss im HTML eingebunden sein) */
     font-family: "Kanit", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen-Sans, Ubuntu, Cantarell, "Helvetica Neue", sans-serif;
     line-height: 1.6;
     background-color: var(--background-color);
     color: var(--text-color);
     display: flex;
     justify-content: center;
-    align-items: flex-start; /* Oben ausrichten, gut für längere Formulare */
+    align-items: flex-start;
     min-height: 100vh;
     margin: 0;
     padding: 20px;
     box-sizing: border-box;
-    overflow-y: auto; /* Ermöglicht Scrollen, wenn der Inhalt grösser ist */
+    overflow-y: auto;
 }
 
-/* Stil für den Haupt-Container */
 .container {
     background-color: var(--surface-color);
     padding: 30px;
-    border-radius: 8px; /* Mittlere Rundung */
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08); /* Dezenter Schatten */
-    max-width: 600px; /* Maximale Breite */
+    border-radius: 8px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+    max-width: 600px;
     width: 100%;
     box-sizing: border-box;
-    margin-top: 40px; /* Abstand oben */
-    margin-bottom: 40px; /* Abstand unten */
+    margin-top: 40px;
+    margin-bottom: 40px;
 }
 
-/* Stil für die Überschrift */
 h1 {
     text-align: center;
     color: var(--primary-color);
     margin-top: 0;
     margin-bottom: 30px;
-    font-size: 2rem; /* Grössere Überschrift */
-    font-weight: 600; /* Mittlere Dicke bei Kanit */
-    letter-spacing: 0.05em; /* Leichter Zeichenabstand */
+    font-size: 2rem;
+    font-weight: 600;
+    letter-spacing: 0.05em;
 }
 
-/* Stil für einzelne Formularzeilen */
 .form-group {
-    margin-bottom: 20px; /* Abstand zwischen den Zeilen */
-    display: flex; /* Nutzt Flexbox für die horizontale Ausrichtung */
-    align-items: center; /* Zentriert Label und Input vertikal */
-    gap: 15px; /* Abstand zwischen Label und Input/Select */
-    flex-wrap: wrap; /* Erlaubt Umbruch auf kleinen Bildschirmen */
-}
-
-/* Stil für Labels */
-.form-group label {
-    display: block;
-    margin-bottom: 0;
-    font-weight: 500; /* Mittlere Dicke */
-    font-size: 1rem;
-    color: var(--text-color);
-    width: 180px; /* Feste Breite für Desktop-Ausrichtung */
-    text-align: right; /* Rechtsbündig */
-    flex-shrink: 0; /* Verhindert, dass das Label kleiner wird */
-}
-
-/* Spezialfall für das Label der Gong-Checkbox */
-.form-group input[type="checkbox"] + label {
-     width: auto; /* Auto-Breite */
-     text-align: left; /* Links ausgerichtet */
-     font-weight: normal; /* Normale Dicke */
-     cursor: pointer;
-     flex-grow: 1; /* Nimmt verfügbaren Platz ein */
-     color: var(--text-color); /* Normale Textfarbe */
-}
-
-/* Stil für Input-Felder und Select-Dropdowns */
-.form-group input[type="text"],
-.form-group select {
-    flex-grow: 1; /* Füllt den verfügbaren Platz */
-    padding: 12px 15px; /* Innenabstand */
-    border: 1px solid var(--border-color); /* Heller Rand */
-    border-radius: 4px; /* Leichte Rundung */
-    font-size: 1rem;
-    color: var(--text-color);
-    background-color: var(--surface-color); /* Weißer Hintergrund */
-    box-sizing: border-box;
-    transition: border-color 0.2s ease, box-shadow 0.2s ease; /* Sanfte Übergänge */
-    min-width: 150px; /* Mindestbreite */
-}
-
-/* Stil für Platzhalter-Text */
-.form-group input[type="text"]::placeholder,
-.form-group select option[value=""]:first-child { /* Optional: Stil für den ersten Select-Optionstext */
-    color: var(--text-color-light); /* Hellere Farbe */
-    opacity: 1; /* Stellt sicher, dass es nicht transparent ist */
-}
-
-/* Stil für ungültige Eingabe */
-.form-group input[type="text"].is-invalid {
-    border-color: var(--error-color); /* Rote Umrandung */
-    box-shadow: 0 0 0 0.2rem rgba(220, 53, 69, 0.25); /* Halbtransparenter roter Schatten */
-}
-
-
-/* Stil für die Button-Gruppe */
-.button-group {
-    margin-top: 30px;
+    margin-bottom: 15px;
     display: flex;
-    justify-content: flex-end; /* Buttons rechts ausrichten */
-    gap: 15px; /* Abstand zwischen Buttons */
+    align-items: center;
+    gap: 15px;
     flex-wrap: wrap;
 }
 
-/* Stil für die Buttons */
+.form-group label {
+    display: block;
+    margin-bottom: 0;
+    font-weight: 500;
+    font-size: 1rem;
+    color: var(--text-color);
+    width: 180px;
+    text-align: right;
+    flex-shrink: 0;
+}
+
+.form-group input[type="checkbox"] + label {
+     width: auto;
+     text-align: left;
+     font-weight: normal;
+     cursor: pointer;
+     flex-grow: 1;
+     color: var(--text-color);
+}
+
+.form-group input[type="text"],
+.form-group select {
+    flex-grow: 1;
+    padding: 12px 15px;
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    font-size: 1rem;
+    color: var(--text-color);
+    background-color: var(--surface-color);
+    box-sizing: border-box;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+    min-width: 150px;
+}
+
+.form-group input[type="text"]::placeholder,
+.form-group select option[value=""]:first-child {
+    color: var(--text-color-light);
+    opacity: 1;
+}
+
+
+.form-group input[type="text"].is-invalid {
+    border-color: var(--error-color);
+    box-shadow: 0 0 0 0.2rem rgba(220, 53, 69, 0.25);
+}
+
+
+.button-group {
+    margin-top: 30px;
+    display: flex;
+    justify-content: flex-end;
+    gap: 15px;
+    flex-wrap: wrap;
+}
+
 .button-group button {
-    padding: 12px 25px; /* Innenabstand */
+    padding: 12px 25px;
     border: none;
-    border-radius: 6px; /* Abgerundete Ecken */
+    border-radius: 6px;
     background-color: var(--primary-color);
-    color: var(--on-primary-color); /* Weiße Textfarbe */
-    font-size: 1.05rem; /* Schriftgrösse etwas grösser */
-    font-weight: 600; /* Mittlere Dicke */
+    color: var(--on-primary-color);
+    font-size: 1.05rem;
+    font-weight: 600;
     cursor: pointer;
     transition: background-color 0.2s ease, box-shadow 0.2s ease;
     flex-grow: 0;
     flex-shrink: 0;
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1); /* Dezenter Schatten */
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
 }
 
-/* Hover-Effekt für Buttons */
 .button-group button:hover {
-    background-color: var(--primary-color-dark); /* Dunkler bei Hover */
-    box-shadow: 0 3px 8px rgba(0, 0, 0, 0.15); /* Schatten wird prominenter */
+    background-color: var(--primary-color-dark);
+    box-shadow: 0 3px 8px rgba(0, 0, 0, 0.15);
 }
 
-/* Fokus-Stil für Barrierefreiheit */
 *:focus {
-    outline: 2px solid var(--primary-color); /* Rahmen in Primärfarbe */
-    outline-offset: 3px; /* Abstand zum Element */
-    border-radius: 4px; /* Passend zu Input-Rundung */
+    outline: 2px solid var(--primary-color);
+    outline-offset: 3px;
+    border-radius: 4px;
 }
-/* Spezifischer Fokus-Stil für Text-Inputs und Selects, ergänzt den Rand-Stil */
 .form-group input[type="text"]:focus,
 .form-group select:focus {
-     border-color: var(--primary-color); /* Rand wird primär */
-     box-shadow: 0 0 0 0.2rem var(--focus-outline-color); /* Halbtransparenter Schatten */
-     outline: none; /* Entfernt Standard-Outline */
+     border-color: var(--primary-color);
+     box-shadow: 0 0 0 0.2rem var(--focus-outline-color);
+     outline: none;
 }
 
 
-/* Optional: Stil für disabled Buttons */
 .button-group button:disabled {
     background-color: #cccccc;
     color: #666666;
@@ -172,28 +159,26 @@ h1 {
     box-shadow: none;
 }
 
-/* Medienabfrage für kleinere Bildschirme */
 @media (max-width: 600px) {
     .form-group {
-        flex-direction: column; /* Elemente untereinander */
-        align-items: stretch; /* Elemente strecken sich */
+        flex-direction: column;
+        align-items: stretch;
         gap: 8px;
     }
 
     .form-group label {
-        width: auto; /* Volle Breite */
-        text-align: left; /* Links ausgerichtet */
-        margin-bottom: 5px; /* Abstand zum Input */
+        width: auto;
+        text-align: left;
+        margin-bottom: 5px;
     }
 
     .form-group input[type="text"],
     .form-group select {
-         min-width: 100%; /* Volle Breite */
+         min-width: 100%;
     }
 
-     /* Spezialfall Checkbox Label auf kleinen Bildschirmen */
      .form-group input[type="checkbox"] + label {
-         margin-bottom: 0; /* Kein extra Abstand */
+         margin-bottom: 0;
      }
 
 
