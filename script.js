@@ -176,7 +176,7 @@ function setupGongCheckboxListener() {
                      console.warn("Gong-Checkbox angehakt, aber keine Gong-Dateien verfügbar.");
                      // Checkbox eventuell wieder deaktivieren oder eine Meldung anzeigen
                      // this.checked = false;
-                     // alert("Es wurden keine Gong-Dateien gefunden.");
+                     alert("Es wurden keine Gong-Dateien gefunden oder geladen."); // Deutlichere Meldung
                  }
             } else {
                 container.style.display = 'none'; // Verstecke das Dropdown
@@ -215,8 +215,6 @@ function playAnnouncement() {
     } else if (includeGong && (!selectedGong || selectedGong === "")) {
         // Feedback, wenn Gong angehakt, aber keiner ausgewählt ist
         console.warn("Gong Option aktiviert, aber kein Gong ausgewählt. Gong wird übersprungen.");
-         // Sie könnten hier auch eine Meldung an den Benutzer anzeigen, aber die Ansage trotzdem spielen lassen
-         // alert("Bitte wählen Sie einen Gong aus, oder deaktivieren Sie die Gong-Option. Die Ansage wird ohne Gong abgespielt.");
          // Fahren Sie in diesem Fall fort, die restliche Ansage zu konstruieren und abzuspielen.
     }
 
@@ -340,5 +338,5 @@ document.getElementById("viaBtn").addEventListener("click", playOnlyVia);
 // Dropdowns laden und Gong-Checkbox-Listener einrichten, sobald das DOM bereit ist
 document.addEventListener("DOMContentLoaded", () => {
     loadDropdowns();
-    // setupGongCheckboxListener wird jetzt am Ende von loadDropdowns aufgerufen
+    // setupGongCheckboxListener wird am Ende von loadDropdowns aufgerufen
 });
