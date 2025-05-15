@@ -6,49 +6,46 @@
     <title>Ansagen-Generator</title>
     <link rel="stylesheet" href="style.css"> </head>
 <body>
-    <h1>Ansagen-Generator</h1>
+    <div class="container"> <h1>Ansagen-Generator</h1>
 
-    <div>
-        <input type="checkbox" id="includeGongCheckbox">
-        <label for="includeGongCheckbox">Gong vor der Ansage abspielen</label>
-    </div>
-    <div id="gongSelectContainer" style="display: none;"> <label for="gongSelect">Gong wählen:</label>
-        <select id="gongSelect">
-            <option value="">– Keinen Gong wählen –</option>
-        </select>
-    </div>
-    <div>
-        <label for="lineInput">Liniennummer:</label>
-        <input type="text" id="lineInput" placeholder="Liniennummer eingeben">
-    </div>
+        <div class="form-group">
+            <input type="checkbox" id="includeGongCheckbox">
+            <label for="includeGongCheckbox">Gong vor der Ansage abspielen</label>
+        </div>
+        <div id="gongSelectContainer" class="form-group" style="display: none;"> <label for="gongSelect">Gong wählen:</label>
+            <select id="gongSelect">
+                <option value="">– Keinen Gong wählen –</option>
+            </select>
+        </div>
+        <div class="form-group">
+            <label for="lineInput">Liniennummer:</label>
+            <input type="text" id="lineInput" placeholder="Liniennummer eingeben">
+        </div>
 
-    <div>
-        <label for="zielSelect">Fahrziel:</label>
-        <select id="zielSelect">
-            <option value="">– Bitte wählen –</option>
-        </select>
-    </div>
+        <div class="form-group">
+            <label for="zielSelect">Fahrziel:</label>
+            <select id="zielSelect">
+                <option value="">– Bitte wählen –</option>
+            </select>
+        </div>
 
-    <div>
-        <label for="viaSelect">Via Haltestelle:</label>
-        <select id="viaSelect">
-            <option value="">– Keine Via –</option>
-        </select>
-    </div>
+        <div class="form-group">
+            <label for="viaSelect">Via Haltestelle:</label>
+            <select id="viaSelect">
+                <option value="">– Keine Via –</option>
+            </select>
+        </div>
 
-    <div>
-        <label for="sonderSelect">Sonderansage:</label>
-        <select id="sonderSelect">
-            <option value="">– Keine Sonderansage –</option>
-        </select>
-    </div>
+        <div class="form-group">
+            <label for="sonderSelect">Sonderansage:</label>
+            <select id="sonderSelect">
+                <option value="">– Keine Sonderansage –</option>
+            </select>
+        </div>
 
-
-    <div>
-        <button id="playBtn">Ansage abspielen</button>
-        <button id="sonderBtn">Nur Sonderansage abspielen</button>
-        <button id="viaBtn">Nur Via abspielen</button>
-    </div>
-
-    <script src="script.js"></script> </body>
+        <div class="button-group"> <button id="playBtn">Ansage abspielen</button>
+            <button id="sonderBtn">Nur Sonderansage abspielen</button>
+            <button id="viaBtn">Nur Via abspielen</button>
+        </div>
+    </div> <script src="script.js"></script> </body>
 </html>
