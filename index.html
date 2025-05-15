@@ -4,17 +4,15 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Ansagen-Generator</title>
-    <link rel="stylesheet" href="style.css">
-</head>
+    <link rel="stylesheet" href="style.css"> </head>
 <body>
     <h1>Ansagen-Generator</h1>
 
-    <!-- Eingabefelder für die Ansagen -->
     <div>
         <label for="lineInput">Liniennummer:</label>
         <input type="text" id="lineInput" placeholder="Liniennummer eingeben">
     </div>
-    
+
     <div>
         <label for="zielSelect">Fahrziel:</label>
         <select id="zielSelect">
@@ -37,11 +35,19 @@
     </div>
 
     <div>
+        <input type="checkbox" id="includeGongCheckbox">
+        <label for="includeGongCheckbox">Gong vor der Ansage abspielen</label>
+    </div>
+    <div id="gongSelectContainer" style="display: none;"> <label for="gongSelect">Gong wählen:</label>
+        <select id="gongSelect">
+            <option value="">– Keinen Gong wählen –</option>
+        </select>
+    </div>
+    <div>
         <button id="playBtn">Ansage abspielen</button>
         <button id="sonderBtn">Nur Sonderansage abspielen</button>
-        <button id="viaBtn">Nur Via abspielen</button> <!-- Neuer Button für Via -->
+        <button id="viaBtn">Nur Via abspielen</button>
     </div>
 
-    <script src="script.js"></script>
-</body>
+    <script src="script.js"></script> </body>
 </html>
