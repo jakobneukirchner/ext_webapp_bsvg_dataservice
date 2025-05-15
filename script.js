@@ -19,6 +19,10 @@ function stopPlayback() {
 // Startet eine neue Wiedergabesequenz
 function startPlayback(urls) {
     stopPlayback(); // Stoppen Sie zuerst jede laufende Wiedergabe
+    if (!urls || urls.length === 0) {
+        console.warn("Keine URLs zum Abspielen übergeben.");
+        return;
+    }
     audioUrls = urls;
     currentIndex = 0;
     playNextAudio(); // Starten Sie den ersten Titel
@@ -35,6 +39,15 @@ function playNextAudio() {
 
     const url = audioUrls[currentIndex];
     console.log(`Versuche abzuspielen [${currentIndex + 1}/${audioUrls.length}]:`, url); // Debugging-Ausgabe
+
+    // Prüfen, ob die URL gültig ist
+    if (!url || typeof url !== 'string' || url.trim() === '') {
+        console.error(`Ungültige URL übersprungen bei Index ${currentIndex}:`, url);
+        currentIndex++; // Springe zum nächsten Titel
+        playNextAudio(); // Versuche den nächsten Titel
+        return;
+    }
+
 
     currentAudio = new Audio(url);
 
@@ -83,6 +96,7 @@ async function loadDropdowns() {
     // Helper function to fetch and populate
     async function fetchAndPopulate(path, selectElement) {
         try {
+            // Verwenden Sie die GitHub API, um die Dateiliste zu erhalten
             const response = await fetch(`https://api.github.com/repos/jakobneukirchner/ext_webapp_bsvg/contents/${path}`);
 
             if (!response.ok) {
@@ -120,7 +134,7 @@ async function loadDropdowns() {
 }
 
 
-// Funktion, um die vollständige Ansage abzuspielen
+// Funktion, um die vollständige Ansage abzuspielen (Linie/Zug -> Ziel -> Via -> Sonder)
 function playAnnouncement() {
     const line = document.getElementById("lineInput").value.trim();
     const ziel = document.getElementById("zielSelect").value;
@@ -142,15 +156,15 @@ function playAnnouncement() {
         urls.push(GITHUB_BASE + "Fragmente/zug.mp3");
     }
 
-    // 2. Ziel (Ziel ist obligatorisch für eine sinnvolle Ansage)
+    // 2. Ziel (Ziel ist obligatorisch für eine sinnvolle vollständige Ansage)
     if (ziel && ziel !== "") { // Prüfen, ob ein Ziel ausgewählt wurde (nicht der Standard-Leerwert)
         urls.push(GITHUB_BASE + "Fragmente/nach.mp3");
          // Der Ziel-Wert enthält bereits die .mp3-Endung aus dem Select-Option-Value
         urls.push(GITHUB_BASE + "Ziele/" + encodeURIComponent(ziel));
     } else {
-        alert("Bitte wählen Sie ein Fahrziel aus, um die Ansage zu erstellen.");
-        console.warn("Ansage abgebrochen: Kein Ziel ausgewählt.");
-        return; // Ansage kann ohne Ziel nicht sinnvoll abgespielt werden
+        alert("Bitte wählen Sie ein Fahrziel aus, um die vollständige Ansage zu erstellen.");
+        console.warn("Vollständige Ansage abgebrochen: Kein Ziel ausgewählt.");
+        return; // Vollständige Ansage kann ohne Ziel nicht sinnvoll abgespielt werden
     }
 
     // 3. Via (optional)
@@ -158,7 +172,7 @@ function playAnnouncement() {
     // und ob der Wert nicht "keine.mp3" ist (falls dies eine explizite Option ist)
     if (via && via !== "" && via !== "keine.mp3") {
         // Fügen Sie den "über"-Schnipsel hinzu (wahrscheinlich Dateiname ueber.mp3)
-        urls.push(GITHUB_BASE + "Fragmente/ueber.mp3"); // <-- Korrigierter Dateiname?
+        urls.push(GITHUB_BASE + "Fragmente/ueber.mp3"); // <-- Korrigierter Dateiname
          // Fügen Sie die Via-Haltestelle hinzu (Wert enthält bereits die .mp3-Endung)
         urls.push(GITHUB_BASE + "via/" + encodeURIComponent(via));
     }
@@ -173,14 +187,10 @@ function playAnnouncement() {
     }
 
     // Überprüfen Sie das final konstruierte URL-Array
-    console.log("Konstruierte URLs für die Ansage:", urls);
+    console.log("Konstruierte URLs für die vollständige Ansage:", urls);
 
     // Starten Sie die Wiedergabe der Sequenz
-    if (urls.length > 0) {
-        startPlayback(urls);
-    } else {
-        console.warn("Keine URLs zum Abspielen konstruiert.");
-    }
+     startPlayback(urls);
 }
 
 // Funktion, um nur die Sonderansage abzuspielen
@@ -197,28 +207,51 @@ function playOnlySonderansage() {
     }
 }
 
-// Funktion, um nur die Via-Ansage abzuspielen ("über" + Via-Haltestelle)
+// Funktion, um nur die Via-Ansage abzuspielen (Linie/Zug -> über -> Via)
 function playOnlyVia() {
-    const via = document.getElementById("viaSelect").value;
-    // Prüfen, ob via ausgewählt ist und nicht "– Keine Via –" (der leere Standard-Value)
-    // und nicht "keine.mp3" ist
-    if (via && via !== "" && via !== "keine.mp3") {
-         // Die Via-Werte enthalten bereits die .mp3-Endung
-        const viaUrls = [
-             GITHUB_BASE + "Fragmente/ueber.mp3", // <-- Korrigierter Dateiname?
-             GITHUB_BASE + "via/" + encodeURIComponent(via)
-        ];
-        console.log("Spiele nur Via ab:", viaUrls);
-        startPlayback(viaUrls); // Sequenz "über" + Via starten
+    const line = document.getElementById("lineInput").value.trim();
+    const via = document.getElementById("viaSelect").value; // Wert enthält bereits .mp3
+
+     // Array für die URLs dieser spezifischen Ansage
+    const urls = [];
+
+    // 1. Linie oder Zug (immer dabei, auch wenn keine Linie eingegeben)
+     if (line) {
+        // Linie Nummer XX
+        urls.push(GITHUB_BASE + "Fragmente/linie.mp3");
+        urls.push(GITHUB_BASE + "Nummern/line_number_end/" + encodeURIComponent(line) + ".mp3");
     } else {
-        alert("Bitte wählen Sie eine gültige Via-Haltestelle aus.");
+        // Zug
+        urls.push(GITHUB_BASE + "Fragmente/zug.mp3");
     }
+
+    // 2. Via (Via ist obligatorisch für diese spezielle Ansage)
+    // Prüfen, ob ein Via-Wert ausgewählt wurde (nicht der Standard-Leerwert "")
+    // und ob der Wert nicht "keine.mp3" ist
+    if (via && via !== "" && via !== "keine.mp3") {
+        // Fügen Sie den "über"-Schnipsel hinzu
+        urls.push(GITHUB_BASE + "Fragmente/ueber.mp3"); // <-- Korrigierter Dateiname
+         // Fügen Sie die Via-Haltestelle hinzu (Wert enthält bereits die .mp3-Endung)
+        urls.push(GITHUB_BASE + "via/" + encodeURIComponent(via));
+    } else {
+        alert("Bitte wählen Sie eine Via-Haltestelle aus, um diese Ansage zu erstellen.");
+        console.warn("Nur Via Ansage abgebrochen: Keine Via-Haltestelle ausgewählt.");
+        return; // Diese Ansage macht ohne Via-Haltestelle keinen Sinn
+    }
+
+    // Überprüfen Sie das final konstruierte URL-Array für "Nur Via"
+    console.log("Konstruierte URLs für 'Nur Via':", urls);
+
+
+    // Starten Sie die Wiedergabe der Sequenz
+    startPlayback(urls);
 }
+
 
 // Event-Listener für die Buttons
 document.getElementById("playBtn").addEventListener("click", playAnnouncement);
 document.getElementById("sonderBtn").addEventListener("click", playOnlySonderansage);
-document.getElementById("viaBtn").addEventListener("click", playOnlyVia);
+document.getElementById("viaBtn").addEventListener("click", playOnlyVia); // Event Listener für den "Nur Via" Button
 
 // Dropdowns laden, sobald das DOM bereit ist
 document.addEventListener("DOMContentLoaded", loadDropdowns);
