@@ -1,83 +1,91 @@
-/* Grundlegende Stile für Body und Container */
-body {
-    /* Setzt Kanit als primäre Schriftart, mit Fallbacks */
-    font-family: -apple-system, BlinkMacSystemFont, "Kanit", "Segoe UI", Roboto, Oxygen-Sans, Ubuntu, Cantarell, "Helvetica Neue", sans-serif;
-    line-height: 1.6;
-    background-color: #f4f7f6; /* Heller Hintergrund */
-    color: #333; /* Dunkle Textfarbe */
-    display: flex; /* Zentriert den Container */
-    justify-content: center; /* Zentriert horizontal */
-    align-items: center; /* Zentriert vertikal (falls Inhalt nicht den ganzen Viewport füllt) */
-    min-height: 100vh; /* Mindesthöhe des Bodys ist der volle Viewport */
-    margin: 0; /* Entfernt Standard-Body-Margin */
-    padding: 20px; /* Etwas Platz um den Container */
-    box-sizing: border-box; /* Padding wird in die Elementgröße einbezogen */
+/* Allgemeine Stile und Resets */
+*, *::before, *::after {
+    box-sizing: border-box; /* Vereinfacht das Box-Modell: Padding und Border sind IN der Elementgröße */
 }
 
+body {
+    font-family: -apple-system, BlinkMacSystemFont, "Kanit", "Segoe UI", Roboto, Oxygen-Sans, Ubuntu, Cantarell, "Helvetica Neue", sans-serif; /* Primäre Schriftart mit Fallbacks */
+    line-height: 1.6; /* Besserer Zeilenabstand für Lesbarkeit */
+    background-color: #f4f7f6; /* Heller Hintergrund */
+    color: #333; /* Dunkle Textfarbe für guten Kontrast */
+    display: flex; /* Nutzt Flexbox zur Zentrierung des Inhalts */
+    justify-content: center; /* Zentriert Inhalt horizontal im Body */
+    align-items: center; /* Zentriert Inhalt vertikal im Body (falls kleiner als Viewport) */
+    min-height: 100vh; /* Stellt sicher, dass der Body mindestens die volle Viewport-Höhe einnimmt */
+    margin: 0; /* Entfernt Standard-Body-Margin */
+    padding: 20px; /* Innenabstand um den Inhalt, verhindert, dass es ganz am Rand klebt */
+}
+
+/* Stil für den Haupt-Container */
 .container {
-    background-color: #fff; /* Weißer Hintergrund für den Container */
+    background-color: #fff; /* Weißer Hintergrund für das Formular/die App */
     padding: 30px; /* Innenabstand */
     border-radius: 8px; /* Abgerundete Ecken */
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1); /* Leichter Schatten */
-    max-width: 600px; /* Maximale Breite des Containers */
-    width: 100%; /* Nimmt volle Breite bis max-width ein */
-    box-sizing: border-box;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1); /* Etwas prominenterer Schatten */
+    max-width: 600px; /* Maximale Breite für das Formular */
+    width: 100%; /* Nimmt die volle Breite bis max-width ein */
+    box-sizing: border-box; /* Stellt sicher, dass Padding die Breite nicht erhöht */
 }
 
 /* Stil für die Überschrift */
 h1 {
     text-align: center; /* Zentriert den Text */
-    color: #0056b3; /* Blaue Farbe */
+    color: #0056b3; /* Eine angenehme blaue Farbe */
+    margin-top: 0; /* Entfernt Standard-Margin oben */
     margin-bottom: 30px; /* Abstand unter der Überschrift */
+    font-size: 1.8rem; /* Schriftgröße etwas größer */
 }
 
-/* Stil für die Formularzeilen */
+/* Stil für einzelne Formularzeilen (Label + Input/Select) */
 .form-group {
     margin-bottom: 15px; /* Abstand zwischen den Zeilen */
-    display: flex; /* Nutzt Flexbox für Ausrichtung von Label und Input */
-    align-items: center; /* Zentriert Elemente vertikal in der Zeile */
-    gap: 10px; /* Abstand zwischen Label und Input/Select */
+    display: flex; /* Nutzt Flexbox für die horizontale Ausrichtung */
+    align-items: center; /* Zentriert Label und Input vertikal */
+    gap: 10px; /* Abstand zwischen den Flex-Items (Label und Input/Select) */
+    flex-wrap: wrap; /* Erlaubt Elementen, in die nächste Zeile zu springen auf kleinen Bildschirmen */
 }
 
-/* Besonderer Stil für die Gong-Checkbox-Zeile (falls sie anders aussehen soll) */
-.form-group input[type="checkbox"] {
-    flex-shrink: 0; /* Verhindert, dass die Checkbox schrumpft */
-    margin-right: 0; /* Abstand wird durch Gap im Form-Group gehandhabt */
-    vertical-align: middle; /* Vertikale Ausrichtung */
-}
-
+/* Stil für Labels */
 .form-group label {
     display: block; /* Labels nehmen ihre Breite ein */
-    margin-bottom: 0; /* Entfernt Standard-Label-Margin */
-    font-weight: bold; /* Fettgedruckt für Labels */
-    width: 150px; /* Feste Breite für Labels zur besseren Ausrichtung */
+    margin-bottom: 0; /* Entfernt potenziellen Standard-Margin */
+    font-weight: bold; /* Labels fettgedruckt */
+    width: 180px; /* Feste Breite für Labels zur besseren Ausrichtung */
     text-align: right; /* Text rechtsbündig */
-    flex-shrink: 0; /* Verhindert, dass das Label schrumpft */
+    flex-shrink: 0; /* Verhindert, dass das Label kleiner wird, als sein Inhalt benötigt */
 }
 
-/* Spezialfall für das Label der Gong-Checkbox, da sie direkt neben der Checkbox ist */
+/* Spezifischer Stil für das Label der Gong-Checkbox, das direkt daneben steht */
 .form-group input[type="checkbox"] + label {
-     width: auto; /* Label für Checkbox braucht keine feste Breite */
+     width: auto; /* Braucht keine feste Breite */
      text-align: left; /* Text linksbündig */
      font-weight: normal; /* Nicht fettgedruckt */
      cursor: pointer; /* Zeigt, dass es klickbar ist */
-     flex-grow: 1; /* Nimmt verfügbaren Platz ein, falls nötig */
+     flex-grow: 1; /* Nimmt verfügbaren Platz ein */
 }
 
 /* Stil für Input-Felder und Select-Dropdowns */
 .form-group input[type="text"],
 .form-group select {
     flex-grow: 1; /* Füllt den verfügbaren Platz in der Zeile */
-    padding: 10px; /* Innenabstand */
-    border: 1px solid #ccc; /* Heller Rand */
-    border-radius: 4px; /* Abgerundete Ecken */
+    padding: 10px 12px; /* Innenabstand */
+    border: 1px solid #ccc; /* Heller Standard-Rand */
+    border-radius: 4px; /* Leicht abgerundete Ecken */
     font-size: 1rem; /* Einheitliche Schriftgröße */
-    box-sizing: border-box; /* Padding und Border werden in die Größe einbezogen */
+    box-sizing: border-box; /* Stellt sicher, dass Padding den Platz nicht sprengt */
+    transition: border-color 0.2s ease, box-shadow 0.2s ease; /* Sanfte Übergänge für Rand und Schatten */
+    min-width: 150px; /* Verhindert, dass die Felder ZU schmal werden, wenn Flex-Wrap aktiv ist */
 }
 
-/* Sicherstellen, dass das Gong-Dropdown auch diese Stile erhält, wenn sichtbar */
+/* Stil für das Gong-Dropdown innerhalb seines Containers */
 #gongSelectContainer select {
-     /* Die Stile von .form-group select gelten hier auch */
+    /* Erbt die meisten Stile von .form-group select */
+}
+
+/* Stil für ungültige Eingabe */
+.form-group input[type="text"].is-invalid {
+    border-color: #dc3545; /* Rote Umrandung */
+    box-shadow: 0 0 5px rgba(220, 53, 69, 0.5); /* Roter Schatten als starkes Feedback */
 }
 
 
@@ -85,33 +93,42 @@ h1 {
 .button-group {
     margin-top: 25px; /* Abstand über den Buttons */
     display: flex; /* Nutzt Flexbox für Button-Layout */
-    justify-content: space-between; /* Verteilt die Buttons gleichmäßig */
-    gap: 10px; /* Abstand zwischen Buttons */
-    flex-wrap: wrap; /* Buttons können in die nächste Zeile umbrechen auf kleinen Bildschirmen */
+    justify-content: flex-end; /* Richtet Buttons rechts aus */
+    gap: 15px; /* Abstand zwischen Buttons */
+    flex-wrap: wrap; /* Erlaubt Buttons, in die nächste Zeile zu springen */
 }
 
 /* Stil für die Buttons */
 .button-group button {
-    flex-grow: 1; /* Buttons wachsen, um Platz zu füllen, aber nicht übermäßig */
-    padding: 10px 15px; /* Innenabstand */
+    padding: 10px 20px; /* Innenabstand */
     border: none; /* Kein Standard-Rand */
     border-radius: 4px; /* Abgerundete Ecken */
-    background-color: #007bff; /* Blaue Hintergrundfarbe */
+    background-color: #007bff; /* Primäre Button-Farbe (Blau) */
     color: white; /* Weiße Textfarbe */
     font-size: 1rem; /* Einheitliche Schriftgröße */
-    cursor: pointer; /* Zeigt, dass es klickbar ist */
-    transition: background-color 0.2s ease; /* Sanfter Übergang bei Hover */
-    min-width: 120px; /* Mindestbreite der Buttons */
-    box-sizing: border-box;
+    cursor: pointer; /* Zeigt an, dass das Element klickbar ist */
+    transition: background-color 0.2s ease, opacity 0.2s ease; /* Sanfter Übergang bei Hover */
+    flex-grow: 0; /* Verhindert, dass Buttons unnötig wachsen */
+    flex-shrink: 0; /* Verhindert, dass Buttons schrumpfen */
 }
 
 /* Hover-Effekt für Buttons */
 .button-group button:hover {
     background-color: #0056b3; /* Dunkleres Blau bei Hover */
+    opacity: 0.9; /* Leichte Transparenz */
 }
 
-/* Fokus-Stil für Barrierefreiheit */
+/* Optional: Stil für disabled Buttons */
+.button-group button:disabled {
+    background-color: #cccccc;
+    cursor: not-allowed;
+    opacity: 0.6;
+}
+
+
+/* Fokus-Stil für Barrierefreiheit und Benutzerfreundlichkeit */
 *:focus {
     outline: 2px solid #007bff; /* Blauer Umriss beim Fokus */
-    outline-offset: 2px; /* Abstand zum Element */
+    outline-offset: 3px; /* Abstand zum Element */
+    border-radius: 4px; /* Passt zum Rand-Radius */
 }
