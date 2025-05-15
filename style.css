@@ -4,238 +4,217 @@
 }
 
 :root {
-    /* Definieren Sie einige Farben, die an MD3 angelehnt sind (Beispiele) */
-    --md-sys-color-primary: #006874; /* Eine Beispiel-Primärfarbe */
-    --md-sys-color-on-primary: #ffffff; /* Text auf Primärfarbe */
-    --md-sys-color-primary-container: #97f0ff; /* Hellere Variante für Hintergründe */
-    --md-sys-color-on-primary-container: #002024; /* Text auf Primär-Container */
-    --md-sys-color-secondary: #486267; /* Eine Beispiel-Sekundärfarbe */
-    --md-sys-color-on-secondary: #ffffff; /* Text auf Sekundärfarbe */
-    --md-sys-color-tertiary: #525e7d; /* Eine Beispiel-Tertiärfarbe */
-    --md-sys-color-error: #ba1a1a; /* Fehlerfarbe */
-    --md-sys-color-on-error: #ffffff; /* Text auf Fehlerfarbe */
-    --md-sys-color-outline: #717c7f; /* Farbe für Umrandungen */
-    --md-sys-color-surface: #f8fdff; /* Oberflächenfarbe (hell) */
-    --md-sys-color-on-surface: #001f25; /* Text auf Oberfläche */
-    --md-sys-color-surface-container-high: #e2e2e2; /* Etwas dunklere Oberfläche für Container */
-
-    /* Typografie-Skala (vereinfacht) */
-    --md-sys-typescale-headline-small-size: 1.5rem; /* Für H1 */
-    --md-sys-typescale-body-large-size: 1rem;     /* Für Text */
-    --md-sys-typescale-body-small-size: 0.875rem; /* Für kleine Texte oder Labels */
-
-    /* Form-Skala (vereinfacht) */
-    --md-sys-shape-corner-medium: 8px; /* Mittlere Rundung */
-    --md-sys-shape-corner-large: 16px; /* Größere Rundung für Container */
-    --md-sys-shape-corner-extra-small: 4px; /* Sehr kleine Rundung */
+    /* Eigene Farbpalette */
+    --primary-color: #5a8dee; /* Ein angenehmer Blauton */
+    --primary-color-dark: #4a7ad2; /* Dunkler für Hover */
+    --background-color: #f8f9fa; /* Sehr heller Hintergrund */
+    --surface-color: #ffffff; /* Weiß für den Haupt-Container */
+    --text-color: #343a40; /* Dunkles Grau für Text */
+    --text-color-light: #6c757d; /* Helleres Grau für Platzhalter/schwachen Text */
+    --border-color: #ced4da; /* Heller Rand */
+    --error-color: #dc3545; /* Rot für Fehler */
+    --focus-outline-color: rgba(90, 141, 238, 0.5); /* Halbtransparentes Blau für Fokus */
+    --on-primary-color: #ffffff; /* Text auf Primärfarbe (explizit hinzugefügt) */
 }
 
-
 body {
-    /* Nutzt die definierte Schriftart */
-    font-family: -apple-system, BlinkMacSystemFont, "Kanit", "Segoe UI", Roboto, Oxygen-Sans, Ubuntu, Cantarell, "Helvetica Neue", sans-serif;
+    /* Nutzt Kanit von Google Fonts (muss im HTML eingebunden sein) */
+    font-family: "Kanit", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen-Sans, Ubuntu, Cantarell, "Helvetica Neue", sans-serif;
     line-height: 1.6;
-    background-color: var(--md-sys-color-surface); /* Nutzt Oberflächenfarbe */
-    color: var(--md-sys-color-on-surface); /* Nutzt Textfarbe auf Oberfläche */
+    background-color: var(--background-color);
+    color: var(--text-color);
     display: flex;
     justify-content: center;
-    align-items: flex-start; /* Oben ausrichten, statt mittig, damit es auf größeren Bildschirmen besser aussieht */
+    align-items: flex-start; /* Oben ausrichten, gut für längere Formulare */
     min-height: 100vh;
     margin: 0;
     padding: 20px;
     box-sizing: border-box;
-    overflow-y: auto; /* Erlaubt Scrollen, wenn der Inhalt den Viewport übersteigt */
+    overflow-y: auto; /* Ermöglicht Scrollen, wenn der Inhalt grösser ist */
 }
 
+/* Stil für den Haupt-Container */
 .container {
-    background-color: var(--md-sys-color-surface-container-high); /* Nutzt Container-Oberfläche */
+    background-color: var(--surface-color);
     padding: 30px;
-    border-radius: var(--md-sys-shape-corner-large); /* Größere Rundung */
-    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.08); /* Leichter Schatten */
-    max-width: 600px;
+    border-radius: 8px; /* Mittlere Rundung */
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08); /* Dezenter Schatten */
+    max-width: 600px; /* Maximale Breite */
     width: 100%;
     box-sizing: border-box;
-    margin-top: 40px; /* Abstand vom oberen Rand, da vertikal nicht mehr zentriert */
+    margin-top: 40px; /* Abstand oben */
     margin-bottom: 40px; /* Abstand unten */
 }
 
 /* Stil für die Überschrift */
 h1 {
     text-align: center;
-    color: var(--md-sys-color-on-surface); /* Textfarbe auf Oberfläche */
+    color: var(--primary-color);
     margin-top: 0;
     margin-bottom: 30px;
-    font-size: var(--md-sys-typescale-headline-small-size); /* Nutzt Typografie-Variable */
-    font-weight: bold; /* Kanit 700 sollte geladen sein */
+    font-size: 2rem; /* Grössere Überschrift */
+    font-weight: 600; /* Mittlere Dicke bei Kanit */
+    letter-spacing: 0.05em; /* Leichter Zeichenabstand */
 }
 
-/* Stil für einzelne Formularzeilen (Label + Input/Select) */
+/* Stil für einzelne Formularzeilen */
 .form-group {
-    margin-bottom: 20px; /* Etwas mehr Abstand */
-    display: flex;
-    align-items: center;
-    gap: 15px; /* Etwas mehr Abstand */
-    flex-wrap: wrap;
+    margin-bottom: 20px; /* Abstand zwischen den Zeilen */
+    display: flex; /* Nutzt Flexbox für die horizontale Ausrichtung */
+    align-items: center; /* Zentriert Label und Input vertikal */
+    gap: 15px; /* Abstand zwischen Label und Input/Select */
+    flex-wrap: wrap; /* Erlaubt Umbruch auf kleinen Bildschirmen */
 }
 
-.form-group input[type="checkbox"] {
-    flex-shrink: 0;
-    margin-right: 0;
-    vertical-align: middle;
-    width: 20px; /* Standardgröße */
-    height: 20px; /* Standardgröße */
-    accent-color: var(--md-sys-color-primary); /* Färbt die Checkbox in Primärfarbe */
-}
-
+/* Stil für Labels */
 .form-group label {
     display: block;
     margin-bottom: 0;
-    font-weight: normal; /* Labels sind in MD3 oft nicht fett */
-    font-size: var(--md-sys-typescale-body-large-size); /* Grössere Textgröße */
-    width: 180px;
-    text-align: right;
-    flex-shrink: 0;
-    color: var(--md-sys-color-on-surface); /* Textfarbe auf Oberfläche */
+    font-weight: 500; /* Mittlere Dicke */
+    font-size: 1rem;
+    color: var(--text-color);
+    width: 180px; /* Feste Breite für Desktop-Ausrichtung */
+    text-align: right; /* Rechtsbündig */
+    flex-shrink: 0; /* Verhindert, dass das Label kleiner wird */
 }
 
 /* Spezialfall für das Label der Gong-Checkbox */
 .form-group input[type="checkbox"] + label {
-     width: auto;
-     text-align: left;
-     font-weight: normal;
+     width: auto; /* Auto-Breite */
+     text-align: left; /* Links ausgerichtet */
+     font-weight: normal; /* Normale Dicke */
      cursor: pointer;
-     flex-grow: 1;
-     font-size: var(--md-sys-typescale-body-large-size);
+     flex-grow: 1; /* Nimmt verfügbaren Platz ein */
+     color: var(--text-color); /* Normale Textfarbe */
 }
 
-/* Stil für Input-Felder und Select-Dropdowns (Outlined Stil simuliert) */
+/* Stil für Input-Felder und Select-Dropdowns */
 .form-group input[type="text"],
 .form-group select {
-    flex-grow: 1;
-    padding: 14px 12px; /* Mehr vertikales Padding */
-    border: 1px solid var(--md-sys-color-outline); /* Umrandungsfarbe */
-    border-radius: var(--md-sys-shape-corner-medium); /* Mittlere Rundung */
-    font-size: var(--md-sys-typescale-body-large-size);
-    color: var(--md-sys-color-on-surface);
-    background-color: transparent; /* Transparenter Hintergrund im Outlined-Stil */
+    flex-grow: 1; /* Füllt den verfügbaren Platz */
+    padding: 12px 15px; /* Innenabstand */
+    border: 1px solid var(--border-color); /* Heller Rand */
+    border-radius: 4px; /* Leichte Rundung */
+    font-size: 1rem;
+    color: var(--text-color);
+    background-color: var(--surface-color); /* Weißer Hintergrund */
     box-sizing: border-box;
-    transition: border-color 0.2s ease, box-shadow 0.2s ease;
-    min-width: 150px;
-    /* Entfernt den Standardpfeil bei Selects in einigen Browsern (optional) */
-    /* appearance: none; */
-    /* background-image: url('data:image/svg+xml;charset=US-ASCII,<svg xmlns="http://www.w3.org/2000/svg" width="292.362" height="292.362" viewBox="0 0 292.362 292.362"><path fill="%23717c7f" d="M287.9 242.9L159.1 75.1c-4.7-4.7-12.2-4.7-16.9 0L4.4 242.9c-4.7 4.7-4.7 12.2 0 16.9l8.5 8.5c4.7 4.7 12.2 4.7 16.9 0L145.6 107.9l115.8 150.3c4.7 4.7 12.2 4.7 16.9 0l8.5-8.5c4.7-4.7 4.7-12.1-.1-16.9z"/></svg>'); */
-    /* background-repeat: no-repeat; */
-    /* background-position: right 12px center; */
-    /* background-size: 12px auto; */
+    transition: border-color 0.2s ease, box-shadow 0.2s ease; /* Sanfte Übergänge */
+    min-width: 150px; /* Mindestbreite */
 }
 
-
-/* Stil für den Fokus-Zustand (MD3-ähnlich) */
-.form-group input[type="text"]:focus,
-.form-group select:focus {
-    border-color: var(--md-sys-color-primary); /* Rand in Primärfarbe bei Fokus */
-    box-shadow: 0 0 0 1px var(--md-sys-color-primary); /* Dezenter Primärfarb-Schatten */
-    outline: none; /* Entfernt den Standard-Outline */
-    background-color: var(--md-sys-color-surface); /* Hintergrund wird heller bei Fokus (optional) */
+/* Stil für Platzhalter-Text */
+.form-group input[type="text"]::placeholder,
+.form-group select option[value=""]:first-child { /* Optional: Stil für den ersten Select-Optionstext */
+    color: var(--text-color-light); /* Hellere Farbe */
+    opacity: 1; /* Stellt sicher, dass es nicht transparent ist */
 }
-
 
 /* Stil für ungültige Eingabe */
 .form-group input[type="text"].is-invalid {
-    border-color: var(--md-sys-color-error); /* Rand in Fehlerfarbe */
-    box-shadow: 0 0 0 1px var(--md-sys-color-error); /* Schatten in Fehlerfarbe */
+    border-color: var(--error-color); /* Rote Umrandung */
+    box-shadow: 0 0 0 0.2rem rgba(220, 53, 69, 0.25); /* Halbtransparenter roter Schatten */
 }
 
 
 /* Stil für die Button-Gruppe */
 .button-group {
-    margin-top: 30px; /* Etwas mehr Abstand */
+    margin-top: 30px;
     display: flex;
     justify-content: flex-end; /* Buttons rechts ausrichten */
     gap: 15px; /* Abstand zwischen Buttons */
     flex-wrap: wrap;
 }
 
-/* Stil für die Buttons (Filled Button Stil simuliert) */
+/* Stil für die Buttons */
 .button-group button {
-    padding: 10px 24px; /* MD3-typisches Padding */
+    padding: 12px 25px; /* Innenabstand */
     border: none;
-    border-radius: 20px; /* Stärkere Rundung (Pill shape ist auch MD3) */
-    background-color: var(--md-sys-color-primary); /* Hintergrund in Primärfarbe */
-    color: var(--md-sys-color-on-primary); /* Textfarbe auf Primärfarbe */
-    font-size: var(--md-sys-typescale-body-large-size); /* Grössere Textgröße */
-    font-weight: bold; /* Oft fett in Buttons */
+    border-radius: 6px; /* Abgerundete Ecken */
+    background-color: var(--primary-color);
+    color: var(--on-primary-color); /* Weiße Textfarbe */
+    font-size: 1.05rem; /* Schriftgrösse etwas grösser */
+    font-weight: 600; /* Mittlere Dicke */
     cursor: pointer;
-    transition: background-color 0.2s ease, box-shadow 0.2s ease, opacity 0.2s ease;
+    transition: background-color 0.2s ease, box-shadow 0.2s ease;
     flex-grow: 0;
     flex-shrink: 0;
-    /* Optional: Leichter Schatten im Ruhe-Zustand */
-     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1); /* Dezenter Schatten */
 }
 
 /* Hover-Effekt für Buttons */
 .button-group button:hover {
-    background-color: var(--md-sys-color-primary); /* Bleibt Primärfarbe */
-    opacity: 0.9; /* Leichte Transparenz für Feedback */
-    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15); /* Schatten wird stärker bei Hover */
+    background-color: var(--primary-color-dark); /* Dunkler bei Hover */
+    box-shadow: 0 3px 8px rgba(0, 0, 0, 0.15); /* Schatten wird prominenter */
 }
 
-/* Optional: Aktiver (geklickter) Zustand */
-.button-group button:active {
-     background-color: var(--md-sys-color-primary);
-     opacity: 1;
-     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1); /* Schatten wieder reduzieren oder ändern */
+/* Fokus-Stil für Barrierefreiheit */
+*:focus {
+    outline: 2px solid var(--primary-color); /* Rahmen in Primärfarbe */
+    outline-offset: 3px; /* Abstand zum Element */
+    border-radius: 4px; /* Passend zu Input-Rundung */
+}
+/* Spezifischer Fokus-Stil für Text-Inputs und Selects, ergänzt den Rand-Stil */
+.form-group input[type="text"]:focus,
+.form-group select:focus {
+     border-color: var(--primary-color); /* Rand wird primär */
+     box-shadow: 0 0 0 0.2rem var(--focus-outline-color); /* Halbtransparenter Schatten */
+     outline: none; /* Entfernt Standard-Outline */
 }
 
 
 /* Optional: Stil für disabled Buttons */
 .button-group button:disabled {
-    background-color: var(--md-sys-color-surface-container-high); /* Grau/Oberflächenfarbe */
-    color: var(--md-sys-color-outline); /* Text in Umrandungsfarbe */
+    background-color: #cccccc;
+    color: #666666;
     cursor: not-allowed;
-    opacity: 1; /* Keine Transparenz */
-    box-shadow: none; /* Kein Schatten */
+    opacity: 0.7;
+    box-shadow: none;
 }
 
-/* Fokus-Stil (bereits oben definiert, aber hier für Konsistenz) */
-/* *:focus { ... } */
-
-/* Medienabfrage für kleinere Bildschirme, falls Labels und Inputs umbrechen */
-@media (max-width: 480px) {
+/* Medienabfrage für kleinere Bildschirme */
+@media (max-width: 600px) {
     .form-group {
         flex-direction: column; /* Elemente untereinander */
-        align-items: stretch; /* Elemente strecken sich über die Breite */
-        gap: 5px; /* Weniger Abstand */
+        align-items: stretch; /* Elemente strecken sich */
+        gap: 8px;
     }
 
-    .form-group label,
-    .form-group input[type="checkbox"] + label {
-        width: auto; /* Volle Breite erlauben */
-        text-align: left; /* Text links ausrichten */
-        margin-right: 0;
-        margin-bottom: 5px; /* Abstand unter dem Label */
+    .form-group label {
+        width: auto; /* Volle Breite */
+        text-align: left; /* Links ausgerichtet */
+        margin-bottom: 5px; /* Abstand zum Input */
     }
 
     .form-group input[type="text"],
     .form-group select {
-         min-width: 100%; /* Sicherstellen, dass sie die volle Breite einnehmen */
+         min-width: 100%; /* Volle Breite */
     }
 
+     /* Spezialfall Checkbox Label auf kleinen Bildschirmen */
+     .form-group input[type="checkbox"] + label {
+         margin-bottom: 0; /* Kein extra Abstand */
+     }
+
+
     .button-group {
-        flex-direction: column; /* Buttons untereinander */
-        align-items: stretch; /* Buttons strecken sich über die Breite */
-        gap: 10px; /* Abstand zwischen Buttons */
+        flex-direction: column;
+        align-items: stretch;
+        gap: 10px;
     }
 
     .button-group button {
-         width: 100%; /* Sicherstellen, dass Buttons volle Breite haben */
+         width: 100%;
     }
 
     .container {
-        padding: 20px; /* Weniger Padding auf kleinen Bildschirmen */
+        padding: 20px;
+        margin-top: 20px;
+        margin-bottom: 20px;
     }
 
     h1 {
-        font-size: 1.3rem; /* Kleinere Überschrift */
+        font-size: 1.5rem;
+        margin-bottom: 20px;
     }
 }
