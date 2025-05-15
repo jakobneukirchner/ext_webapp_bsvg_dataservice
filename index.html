@@ -9,6 +9,15 @@
     <h1>Ansagen-Generator</h1>
 
     <div>
+        <input type="checkbox" id="includeGongCheckbox">
+        <label for="includeGongCheckbox">Gong vor der Ansage abspielen</label>
+    </div>
+    <div id="gongSelectContainer" style="display: none;"> <label for="gongSelect">Gong wählen:</label>
+        <select id="gongSelect">
+            <option value="">– Keinen Gong wählen –</option>
+        </select>
+    </div>
+    <div>
         <label for="lineInput">Liniennummer:</label>
         <input type="text" id="lineInput" placeholder="Liniennummer eingeben">
     </div>
@@ -34,15 +43,7 @@
         </select>
     </div>
 
-    <div>
-        <input type="checkbox" id="includeGongCheckbox">
-        <label for="includeGongCheckbox">Gong vor der Ansage abspielen</label>
-    </div>
-    <div id="gongSelectContainer" style="display: none;"> <label for="gongSelect">Gong wählen:</label>
-        <select id="gongSelect">
-            <option value="">– Keinen Gong wählen –</option>
-        </select>
-    </div>
+
     <div>
         <button id="playBtn">Ansage abspielen</button>
         <button id="sonderBtn">Nur Sonderansage abspielen</button>
