@@ -98,10 +98,19 @@ function isValidLineNumber(lineNumber) {
         return true; // Leere Eingabe ist "gültig" im Sinne von "keine Linie gewählt"
     }
     // Prüfen, ob der Dateiname (z.B. "4.mp3" oder "M1.mp3") in unserer Liste der verfügbaren Dateien ist
-    const requiredFilename = encodeURIComponent(lineNumber.trim()) + ".mp3"; // Kodieren, da URL enc. auch beim Laden passiert
-    // Konvertieren Sie availableLineNumberFiles zu einem Set für schnellere Suchen, wenn die Liste sehr lang wäre
-    // Derzeit reicht includes auf dem Array
-    return availableLineNumberFiles.includes(requiredFilename);
+    // URL-Kodierung wird hier nicht angewendet, da availableLineNumberFiles bereits die Original-Dateinamen enthält
+    const requiredFilename = lineNumber.trim() + ".mp3";
+     // Suche muss auf den dekodierten Namen basieren, wenn availableLineNumberFiles dekodierte Namen enthält
+     // Oder auf den kodierten Namen, wenn availableLineNumberFiles kodierte Namen enthält.
+     // Da loadDropdowns Option(name, name) mit dekodiertem Namen macht, aber die URL mit encodeURIComponent baut,
+     // speichern wir hier die DEKODIERTEN Namen und validieren gegen diese.
+     const requiredDecodedFilename = lineNumber.trim() + ".mp3"; // Hier bleibt es einfach, da wir gegen dekodierte Namen prüfen
+
+    // Um gegen die tatsächlichen Dateinamen zu prüfen, verwenden wir die raw filenames aus fetchFiles
+    // availableLineNumberFiles enthält die Namen wie "4.mp3", "M1.mp3" etc.
+    const filenameToCheck = lineNumber.trim() + ".mp3";
+
+    return availableLineNumberFiles.includes(filenameToCheck);
 }
 
 
@@ -135,62 +144,69 @@ async function loadDropdowns() {
     availableLineNumberFiles = []; // Liste der Nummern zurücksetzen
 
 
-    // Helper function to fetch and populate
-    // Diese Version gibt die gefundenen Dateinamen zurück
-    async function fetchFiles(path) {
+    // Helper function to fetch and return a list of .mp3 filenames
+    async function fetchMp3Filenames(path) {
+        console.log(`Versuche Dateien von ${path} zu laden...`);
         try {
+            // Verwenden Sie die GitHub API, um die Dateiliste zu erhalten
             const response = await fetch(`https://api.github.com/repos/jakobneukirchner/ext_webapp_bsvg/contents/${path}`);
 
             if (!response.ok) {
                  console.warn(`Konnte Daten für ${path} nicht laden (Status: ${response.status}).`);
-                 // Bei 404 (Ordner leer/fehlt) leeres Array zurückgeben, bei anderen Fehlern Error werfen
-                 if (response.status === 404) return [];
+                 if (response.status === 404) {
+                     console.warn(`Pfad nicht gefunden oder leer: ${path}`);
+                     return []; // Leeres Array bei 404 (Ordner leer/fehlt)
+                 }
                  throw new Error(`HTTP error! status: ${response.status}`);
             }
 
             const files = await response.json();
             const mp3Files = files
                 .filter(file => file.type === 'file' && file.name.endsWith(".mp3"))
-                .map(file => file.name); // Gibt nur die Dateinamen zurück
+                .map(file => file.name); // Gibt nur die reinen Dateinamen zurück (z.B. "Datei.mp3")
 
             if (mp3Files.length === 0) {
                  console.warn(`Keine .mp3 Dateien im Ordner ${path} gefunden.`);
+            } else {
+                 console.log(`Erfolgreich ${mp3Files.length} .mp3 Dateien von ${path} geladen.`);
             }
             return mp3Files;
 
 
         } catch (error) {
-            console.error(`Netzwerkfehler beim Laden von ${path}:`, error);
-            // Bei Fehler leeres Array zurückgeben
-            return [];
+            console.error(`Netzwerk- oder anderer Fehler beim Laden von ${path}:`, error);
+            return []; // Bei jedem Fehler leeres Array zurückgeben
         }
     }
 
     console.log("Lade Dropdowns und Nummern-Dateiliste...");
     // Laden Sie alle Daten parallel
+    // Wir speichern die rohen Dateinamen (encodeURIComponent wird später beim Bauen der URL angewendet)
     const [zielFiles, viaFiles, sonderFiles, gongFiles, numberFiles] = await Promise.all([
-        fetchFiles("Ziele"),
-        fetchFiles("via"),
-        fetchFiles("Hinweise"),
-        fetchFiles("gong"),
-        fetchFiles("Nummern/line_number_end") // Laden der Liniennummer-Dateien
+        fetchMp3Filenames("Ziele"),
+        fetchMp3Filenames("via"),
+        fetchMp3Filenames("Hinweise"),
+        fetchMp3Filenames("gong"),
+        fetchMp3Filenames("Nummern/line_number_end") // Laden der Liniennummer-Dateien
     ]);
 
     // Befüllen Sie jetzt die Dropdowns mit den geladenen Dateien
+    // Der Option-Value ist der Dateiname (z.B. "Datei.mp3")
+    // Der Option-Text ist der dekodierte Dateiname (z.B. "Datei.mp3", falls keine Umlaute)
     zielFiles.forEach(name => zielSelect.add(new Option(decodeURIComponent(name), name)));
     viaFiles.forEach(name => viaSelect.add(new Option(decodeURIComponent(name), name)));
     sonderFiles.forEach(name => sonderSelect.add(new Option(decodeURIComponent(name), name)));
     gongFiles.forEach(name => gongSelect.add(new Option(decodeURIComponent(name), name)));
 
-    // Speichern Sie die Liniennummer-Dateinamen global
+    // Speichern Sie die Liniennummer-Dateinamen global (z.B. ["1.mp3", "M1.mp3"])
     availableLineNumberFiles = numberFiles;
-    console.log("Verfügbare Liniennummer-Dateien:", availableLineNumberFiles);
+    console.log("Verfügbare Liniennummer-Dateien für Validierung:", availableLineNumberFiles);
 
 
     console.log("Alle Dropdowns und Nummernliste geladen.");
 
     // Event Listener für die Gong-Checkbox hinzufügen
-    setupGongCheckboxListener();
+    setupGongCheckboxListener(); // Prüft jetzt auch, ob Gongs geladen wurden
     // Event Listener für das Linien-Input-Feld hinzufügen
     setupLineInputListener();
 }
@@ -205,10 +221,12 @@ function setupGongCheckboxListener() {
     if (checkbox && container && gongSelect) {
         // Listener hinzufügen
         checkbox.addEventListener('change', function() {
+            // Prüfen, ob es im Dropdown mehr als nur die Standard-Option gibt
+            const gongsAvailable = gongSelect.options.length > 1;
+
             if (this.checked) {
-                 // Nur anzeigen, wenn es auch tatsächlich Gong-Optionen gibt (mehr als nur die Standardoption)
-                 if (gongSelect.options.length > 1) {
-                     container.style.display = 'block'; // Zeige das Dropdown an
+                 if (gongsAvailable) {
+                     container.style.display = 'flex'; // Zeige das Dropdown an (mit Flex, passend zu form-group)
                  } else {
                      console.warn("Gong-Checkbox angehakt, aber keine Gong-Dateien verfügbar.");
                      this.checked = false; // Deaktiviert die Checkbox
@@ -217,7 +235,7 @@ function setupGongCheckboxListener() {
                  }
             } else {
                 container.style.display = 'none'; // Verstecke das Dropdown
-                 // Optional: Setze das Dropdown auf den Standardwert zurück, wenn es versteckt wird
+                 // Setze das Dropdown auf den Standardwert zurück
                  gongSelect.value = "";
             }
         });
@@ -235,15 +253,26 @@ function setupLineInputListener() {
     const lineInput = document.getElementById("lineInput");
     if (lineInput) {
         // Entferne die Fehlermarkierung, sobald der Benutzer anfängt zu tippen oder das Feld fokussiert
-        lineInput.addEventListener('input', () => markLineInputInvalid(false));
+        lineInput.addEventListener('input', () => {
+            markLineInputInvalid(false);
+             // Optional: Validierung live beim Tippen (kann performance kosten bei sehr grossen Listen)
+             // if (lineInput.value.trim() !== "" && !isValidLineNumber(lineInput.value.trim())) {
+             //    markLineInputInvalid(true);
+             // } else {
+             //    markLineInputInvalid(false);
+             // }
+        });
         lineInput.addEventListener('focus', () => markLineInputInvalid(false));
-        // Optional: Validierung bei Verlassen des Feldes
-        // lineInput.addEventListener('blur', (event) => {
-        //     const lineNumber = event.target.value.trim();
-        //     if (lineNumber !== "" && !isValidLineNumber(lineNumber)) {
-        //         markLineInputInvalid(true);
-        //     }
-        // });
+        // Validierung bei Verlassen des Feldes
+        lineInput.addEventListener('blur', (event) => {
+            const lineNumber = event.target.value.trim();
+            if (lineNumber !== "" && !isValidLineNumber(lineNumber)) {
+                markLineInputInvalid(true);
+                 console.warn(`Liniennummer "${lineNumber}" ist ungültig.`);
+            } else {
+                markLineInputInvalid(false);
+            }
+        });
     } else {
         console.error("Linien-Input-Feld nicht gefunden!");
     }
@@ -253,7 +282,7 @@ function setupLineInputListener() {
 // Funktion, um die vollständige Ansage abzuspielen (Gong(optional) -> Linie/Zug -> Ziel -> Via(optional) -> Sonder(optional))
 function playAnnouncement() {
     const line = document.getElementById("lineInput").value.trim();
-    const ziel = document.getElementById("zielSelect").value;
+    const ziel = document.getElementById("zielSelect").value; // Wert enthält bereits .mp3
     const via = document.getElementById("viaSelect").value; // Wert enthält bereits .mp3
     const sonder = document.getElementById("sonderSelect").value; // Wert enthält bereits .mp3
 
@@ -263,7 +292,7 @@ function playAnnouncement() {
     // **VALIDIERUNG DER LINUMMER HIER**
     if (line !== "" && !isValidLineNumber(line)) {
         markLineInputInvalid(true);
-        alert(`Ungültige Liniennummer "${line}" eingegeben. Bitte korrigieren Sie die Eingabe.`);
+        alert(`Ungültige Liniennummer "${line}" eingegeben oder Audio-Datei nicht gefunden. Bitte korrigieren Sie die Eingabe.`);
         console.warn("Ansage abgebrochen: Ungültige Liniennummer.");
         return; // Ansage abbrechen, wenn Nummer ungültig ist
     } else {
@@ -278,8 +307,7 @@ function playAnnouncement() {
     // Nur hinzufügen, wenn Checkbox an und ein Gong ausgewählt ist (Wert ist nicht leer)
     if (includeGong && selectedGong && selectedGong !== "") {
         urls.push(GITHUB_BASE + "gong/" + encodeURIComponent(selectedGong)); // Gong-URL hinzufügen
-    } else if (includeGong && (!selectedGong || selectedGong === "")) {
-        // Feedback, wenn Gong angehakt, aber keiner ausgewählt ist
+    } else if (includeGong) { // Option aktiv, aber kein Gong gewählt
         console.warn("Gong Option aktiviert, aber kein Gong ausgewählt. Gong wird übersprungen.");
          // Fahren Sie in diesem Fall fort, die restliche Ansage zu konstruieren und abzuspielen.
     }
@@ -289,9 +317,8 @@ function playAnnouncement() {
     if (line) {
         // Linie Nummer XX
         urls.push(GITHUB_BASE + "Fragmente/linie.mp3");
-         // Annahme: Die Zahlendateien sind unter Nummern/line_number_end/XX.mp3 gespeichert
-         // Fügen Sie .mp3 hier wieder hinzu, da die Nummer selbst keine Endung hat
-        urls.push(GITHUB_BASE + "Nummern/line_number_end/" + encodeURIComponent(line) + ".mp3"); // <-- Verwenden Sie die vom Benutzer eingegebene, validierte Nummer
+         // Verwenden Sie die vom Benutzer eingegebene, validierte Nummer
+        urls.push(GITHUB_BASE + "Nummern/line_number_end/" + encodeURIComponent(line) + ".mp3");
     } else {
         // Zug
         urls.push(GITHUB_BASE + "Fragmente/zug.mp3");
@@ -350,7 +377,7 @@ function playOnlySonderansage() {
     // 0. Gong (optional) - Zuerst hinzufügen!
     if (includeGong && selectedGong && selectedGong !== "") {
         urls.push(GITHUB_BASE + "gong/" + encodeURIComponent(selectedGong)); // Gong-URL hinzufügen
-    } else if (includeGong && (!selectedGong || selectedGong === "")) {
+    } else if (includeGong) {
          console.warn("Gong Option aktiviert, aber kein Gong ausgewählt. Gong wird übersprungen.");
     }
 
@@ -382,7 +409,7 @@ function playOnlyVia() {
     // **VALIDIERUNG DER LINUMMER HIER**
      if (line !== "" && !isValidLineNumber(line)) {
         markLineInputInvalid(true);
-        alert(`Ungültige Liniennummer "${line}" eingegeben. Bitte korrigieren Sie die Eingabe.`);
+        alert(`Ungültige Liniennummer "${line}" eingegeben oder Audio-Datei nicht gefunden. Bitte korrigieren Sie die Eingabe.`);
         console.warn("'Nur Via' Ansage abgebrochen: Ungültige Liniennummer.");
         return; // Ansage abbrechen, wenn Nummer ungültig ist
     } else {
@@ -396,7 +423,7 @@ function playOnlyVia() {
     // 0. Gong (optional) - Zuerst hinzufügen!
     if (includeGong && selectedGong && selectedGong !== "") {
         urls.push(GITHUB_BASE + "gong/" + encodeURIComponent(selectedGong)); // Gong-URL hinzufügen
-    } else if (includeGong && (!selectedGong || selectedGong === "")) {
+    } else if (includeGong) {
          console.warn("Gong Option aktiviert, aber kein Gong ausgewählt. Gong wird übersprungen.");
     }
 
@@ -414,7 +441,7 @@ function playOnlyVia() {
     // Prüfen, ob ein Via-Wert ausgewählt wurde (nicht der Standard-Leerwert "")
     // und ob der Wert nicht "keine.mp3" ist
     if (via && via !== "" && via !== "keine.mp3") {
-        // Fügen Sie den "über"-Schnipsel hinzu
+        // Fügen Sie den "über"-Schnipsel hinzu (wahrscheinlich Dateiname ueber.mp3)
         urls.push(GITHUB_BASE + "Fragmente/ueber.mp3"); // <-- Korrigierter Dateiname
          // Fügen Sie die Via-Haltestelle hinzu (Wert enthält bereits die .mp3-Endung)
         urls.push(GITHUB_BASE + "via/" + encodeURIComponent(via));
