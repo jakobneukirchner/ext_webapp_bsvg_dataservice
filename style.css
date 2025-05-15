@@ -1,6 +1,7 @@
 /* Grundlegende Stile für Body und Container */
 body {
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen-Sans, Ubuntu, Cantarell, "Helvetica Neue", sans-serif;
+    /* Setzt Kanit als primäre Schriftart, mit Fallbacks */
+    font-family: -apple-system, BlinkMacSystemFont, "Kanit", "Segoe UI", Roboto, Oxygen-Sans, Ubuntu, Cantarell, "Helvetica Neue", sans-serif;
     line-height: 1.6;
     background-color: #f4f7f6; /* Heller Hintergrund */
     color: #333; /* Dunkle Textfarbe */
