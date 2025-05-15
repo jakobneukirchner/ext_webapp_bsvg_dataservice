@@ -4,359 +4,195 @@
 }
 
 :root {
-    /* Blaue MD3-Farbpalette (Beispielwerte) */
-    /* Angelehnt an https://material-foundation.github.io/material-theme-builder/ */
-    --md-sys-color-primary: #0061A4;      /* Primärfarbe (typisches Blau) */
-    --md-sys-color-on-primary: #FFFFFF;     /* Textfarbe auf Primärfarbe */
-    --md-sys-color-primary-container: #D3E4FF; /* Heller Hintergrund in Primärfarbe */
-    --md-sys-color-on-primary-container: #001D35; /* Textfarbe auf Primär-Container */
-    --md-sys-color-secondary: #565F71;      /* Sekundärfarbe */
-    --md-sys-color-on-secondary: #FFFFFF;     /* Textfarbe auf Sekundärfarbe */
-    --md-sys-color-tertiary: #70558E;       /* Tertiärfarbe */
-    --md-sys-color-error: #BA1A1A;         /* Fehlerfarbe (Rot) */
-    --md-sys-color-on-error: #FFFFFF;       /* Textfarbe auf Fehlerfarbe */
-    --md-sys-color-outline: #74777F;        /* Umrandungsfarbe (Grau) */
-    --md-sys-color-surface: #F8FDFF;        /* Oberflächenfarbe (sehr hell) */
-    --md-sys-color-on-surface: #001F25;     /* Textfarbe auf Oberfläche (sehr dunkel blaugrün) */
-    --md-sys-color-surface-variant: #E0E2EB; /* Variante für Oberflächen */
-    --md-sys-color-on-surface-variant: #434752; /* Textfarbe auf Oberflächen-Variante (dunkelgrau) */
-    --md-sys-color-surface-container-high: #E9E9ED; /* Etwas dunklere Oberfläche für Container */
-     --md-sys-color-surface-container: #f3f6f7; /* Hellere Oberfläche für kleine Container wie Label-Hintergrund */
-
-
-    /* Typografie-Skala (vereinfacht) */
-    --md-sys-typescale-headline-small-size: 1.5rem;
-    --md-sys-typescale-body-large-size: 1rem;     /* Standardtextgröße */
-    --md-sys-typescale-body-small-size: 0.75rem;  /* Kleinere Textgröße für schwebendes Label */
-    --md-sys-typescale-label-large-size: 0.875rem; /* Etwas größere Label-Größe, hier nicht für schwebendes Label genutzt */
-
-
-    /* Form-Skala (vereinfacht) */
-    --md-sys-shape-corner-medium: 8px;
-    --md-sys-shape-corner-large: 16px;
-    --md-sys-shape-corner-extra-small: 4px;
-    --md-sys-shape-corner-full: 50%; /* Für Pill shapes */
-
-    /* Abstände */
-    --md-sys-spacing-medium: 16px;
-    --md-sys-spacing-large: 24px;
+    /* Eigene Farbpalette */
+    --primary-color: #5a8dee; /* Ein angenehmer Blauton */
+    --primary-color-dark: #4a7ad2; /* Dunkler für Hover */
+    --background-color: #f8f9fa; /* Sehr heller Hintergrund */
+    --surface-color: #ffffff; /* Weiß für den Haupt-Container */
+    --text-color: #343a40; /* Dunkles Grau für Text */
+    --text-color-light: #6c757d; /* Helleres Grau für Platzhalter/schwachen Text */
+    --border-color: #ced4da; /* Heller Rand */
+    --error-color: #dc3545; /* Rot für Fehler */
+    --focus-outline-color: rgba(90, 141, 238, 0.5); /* Halbtransparentes Blau für Fokus */
 }
-
 
 body {
-    font-family: -apple-system, BlinkMacSystemFont, "Kanit", "Segoe UI", Roboto, Oxygen-Sans, Ubuntu, Cantarell, "Helvetica Neue", sans-serif;
+    /* Nutzt Kanit von Google Fonts (muss im HTML eingebunden sein) */
+    font-family: "Kanit", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen-Sans, Ubuntu, Cantarell, "Helvetica Neue", sans-serif;
     line-height: 1.6;
-    background-color: var(--md-sys-color-surface);
-    color: var(--md-sys-color-on-surface);
+    background-color: var(--background-color);
+    color: var(--text-color);
     display: flex;
     justify-content: center;
-    align-items: flex-start; /* Oben ausrichten */
+    align-items: flex-start; /* Oben ausrichten, gut für längere Formulare */
     min-height: 100vh;
     margin: 0;
-    padding: var(--md-sys-spacing-medium);
+    padding: 20px;
     box-sizing: border-box;
-    overflow-y: auto;
+    overflow-y: auto; /* Ermöglicht Scrollen, wenn der Inhalt grösser ist */
 }
 
+/* Stil für den Haupt-Container */
 .container {
-    background-color: var(--md-sys-color-surface-container-high);
-    padding: var(--md-sys-spacing-large);
-    border-radius: var(--md-sys-shape-corner-large);
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
-    max-width: 600px;
+    background-color: var(--surface-color);
+    padding: 30px;
+    border-radius: 8px; /* Mittlere Rundung */
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08); /* Dezenter Schatten */
+    max-width: 600px; /* Maximale Breite */
     width: 100%;
     box-sizing: border-box;
-    margin-top: var(--md-sys-spacing-large);
-    margin-bottom: var(--md-sys-spacing-large);
+    margin-top: 40px; /* Abstand oben */
+    margin-bottom: 40px; /* Abstand unten */
 }
 
 /* Stil für die Überschrift */
 h1 {
     text-align: center;
-    color: var(--md-sys-color-on-surface);
+    color: var(--primary-color);
     margin-top: 0;
-    margin-bottom: var(--md-sys-spacing-large);
-    font-size: var(--md-sys-typescale-headline-small-size);
-    font-weight: bold;
+    margin-bottom: 30px;
+    font-size: 2rem; /* Grössere Überschrift */
+    font-weight: 600; /* Mittlere Dicke bei Kanit */
+    letter-spacing: 0.05em; /* Leichter Zeichenabstand */
 }
 
-/* Stil für einzelne Formularzeilen (Container für schwebendes Label) */
+/* Stil für einzelne Formularzeilen */
 .form-group {
-    margin-bottom: var(--md-sys-spacing-medium);
-    display: flex; /* Standard Flexbox für Ausrichtung */
-    align-items: center;
-    gap: 10px; /* Standard Abstand */
-    flex-wrap: wrap;
-    position: relative; /* Wichtig für absolute Positionierung des Labels */
-    /* padding-top hier nicht, wird vom Input-Padding übernommen */
+    margin-bottom: 20px; /* Abstand zwischen den Zeilen */
+    display: flex; /* Nutzt Flexbox für die horizontale Ausrichtung */
+    align-items: center; /* Zentriert Label und Input vertikal */
+    gap: 15px; /* Abstand zwischen Label und Input/Select */
+    flex-wrap: wrap; /* Erlaubt Umbruch auf kleinen Bildschirmen */
 }
 
-/* Stil für Labels (Ausgangsposition wie Platzhalter) */
+/* Stil für Labels */
 .form-group label {
-    position: absolute; /* Absolut positioniert innerhalb von .form-group */
-    top: 16px; /* Vertikale Position, angepasst an Input-Padding */
-    left: 16px; /* Horizontale Position, angepasst an Input-Padding */
-    color: var(--md-sys-color-on-surface-variant); /* Standard Label/Platzhalter Farbe */
-    font-size: var(--md-sys-typescale-body-large-size); /* Standard Textgröße */
-    pointer-events: none; /* Label ist nicht im Weg für Klicks auf Input */
-    transition: all 0.2s ease-out; /* Sanfte Animation für Top, Left, Size, Color */
-    z-index: 1; /* Stellt sicher, dass das Label über dem Input liegt */
-    /* Hintergrund und Padding für den "Schnitt" im Rand, wenn oben */
-    background-color: transparent;
-    padding: 0 4px;
-    margin-left: -4px;
-    transform-origin: top left; /* Wichtig für die Skalierung */
+    display: block;
+    margin-bottom: 0;
+    font-weight: 500; /* Mittlere Dicke */
+    font-size: 1rem;
+    color: var(--text-color);
+    width: 180px; /* Feste Breite für Desktop-Ausrichtung */
+    text-align: right; /* Rechtsbündig */
+    flex-shrink: 0; /* Verhindert, dass das Label kleiner wird */
 }
 
-/* Stil für Input-Felder und Select-Dropdowns (Outlined Stil simuliert) */
+/* Spezialfall für das Label der Gong-Checkbox */
+.form-group input[type="checkbox"] + label {
+     width: auto; /* Auto-Breite */
+     text-align: left; /* Links ausgerichtet */
+     font-weight: normal; /* Normale Dicke */
+     cursor: pointer;
+     flex-grow: 1; /* Nimmt verfügbaren Platz ein */
+     color: var(--text-color); /* Normale Textfarbe */
+}
+
+/* Stil für Input-Felder und Select-Dropdowns */
 .form-group input[type="text"],
 .form-group select {
-    flex-grow: 1;
-    /* Padding: Oben Platz für schwebendes Label */
-    padding: 16px; /* Gleichmässiges Padding als Basis */
-    padding-top: 24px; /* Mehr Platz oben für das Label */
-    padding-bottom: 8px; /* Etwas weniger unten */
-    border: 1px solid var(--md-sys-color-outline); /* Umrandungsfarbe */
-    border-radius: var(--md-sys-shape-corner-medium); /* Mittlere Rundung */
-    font-size: var(--md-sys-typescale-body-large-size);
-    color: var(--md-sys-color-on-surface);
-    background-color: var(--md-sys-color-surface); /* Hintergrundfarbe für Felder */
+    flex-grow: 1; /* Füllt den verfügbaren Platz */
+    padding: 12px 15px; /* Innenabstand */
+    border: 1px solid var(--border-color); /* Heller Rand */
+    border-radius: 4px; /* Leichte Rundung */
+    font-size: 1rem;
+    color: var(--text-color);
+    background-color: var(--surface-color); /* Weißer Hintergrund */
     box-sizing: border-box;
-    transition: border-color 0.2s ease, box-shadow 0.2s ease;
-    min-width: 150px;
-    outline: none; /* Entfernt Standard-Outline */
-    position: relative; /* Wichtig für Z-Index */
-    z-index: 0; /* Unter dem Label */
+    transition: border-color 0.2s ease, box-shadow 0.2s ease; /* Sanfte Übergänge */
+    min-width: 150px; /* Mindestbreite */
 }
 
-/* ------ STILE FÜR SCHWEBENDES LABEL ------ */
-
-/* Label Zustand, wenn Input fokussiert ist ODER Text enthält */
-.form-group input[type="text"]:focus + label,
-.form-group input[type="text"]:not(:placeholder-shown) + label {
-    top: 8px; /* Nach oben verschieben */
-    left: 12px; /* Horizontale Position oben */
-    font-size: var(--md-sys-typescale-body-small-size); /* Kleiner machen */
-    color: var(--md-sys-color-primary); /* Farbe ändern bei Fokus (wird unten überschrieben, wenn nicht fokussiert) */
-    background-color: var(--md-sys-color-surface-container); /* Kleiner Hintergrund für den Schnitt im Rand */
-    z-index: 2; /* Über dem Rand bei Fokus */
-}
-
-/* Farbe des Labels ändern, wenn Input Text enthält, aber NICHT fokussiert ist */
-.form-group input[type="text"]:not(:placeholder-shown):not(:focus) + label {
-     color: var(--md-sys-color-on-surface-variant); /* Farbe wie Standard-Label */
-     /* top und size bleiben wie im ':focus'/'not(:placeholder-shown)' Zustand */
+/* Stil für Platzhalter-Text */
+.form-group input[type="text"]::placeholder {
+    color: var(--text-color-light); /* Hellere Farbe */
+    opacity: 1; /* Stellt sicher, dass es nicht transparent ist */
 }
 
 
-/* ------ ZUSTÄNDE FÜR INPUT-FELDER ------ */
-
-/* Stil für den Fokus-Zustand des Input-Feldes (MD3-ähnlich) */
-.form-group input[type="text"]:focus {
-    border-color: var(--md-sys-color-primary); /* Rand in Primärfarbe bei Fokus */
-    box-shadow: 0 0 0 1px var(--md-sys-color-primary); /* Dezenter Primärfarb-Schatten */
-    background-color: var(--md-sys-color-surface); /* Hintergrund wird heller bei Fokus (optional) */
-}
-
-/* Stil für ungültige Eingabe (Input-Feld) */
+/* Stil für ungültige Eingabe */
 .form-group input[type="text"].is-invalid {
-    border-color: var(--md-sys-color-error); /* Rand in Fehlerfarbe */
-    box-shadow: 0 0 0 1px var(--md-sys-color-error); /* Schatten in Fehlerfarbe */
-}
-
-/* Farbe des Labels ändern, wenn Input ungültig ist UND Text hat */
-.form-group input[type="text"].is-invalid:not(:placeholder-shown) + label,
-.form-group input[type="text"].is-invalid:focus + label /* Auch bei Fokus ungültige Farbe */ {
-    color: var(--md-sys-color-error); /* Label Farbe in Fehlerfarbe */
-}
-
-
-/* ------ STILE FÜR SELECT-DROPDOWNS (Kein schwebendes Label hier, Label immer oben) ------ */
-/* Da der Schwebe-Effekt bei Selects mit reinem CSS sehr komplex ist,
-   behalten wir hier einen einfacheren Stil bei, z.B. Label immer oben */
-
-/* Anpassen des Form-Group Layouts für Selects, damit Label immer oben steht */
-.form-group:has(select) {
-     flex-direction: column; /* Label und Select untereinander */
-     align-items: stretch; /* Element strecken sich über die Breite */
-     gap: 5px; /* Kleinerer Abstand */
-     padding-top: 0; /* Kein extra Padding, da Label nicht schwebt */
-}
-
-/* Überschreiben der schwebenden Label Stile für Selects */
-.form-group:has(select) label {
-     position: static; /* Nicht absolut positionieren */
-     top: auto; /* Positionierung zurücksetzen */
-     left: auto; /* Positionierung zurücksetzen */
-     transform: none; /* Keine Transformation */
-     font-size: var(--md-sys-typescale-body-large-size); /* Normale Textgröße */
-     color: var(--md-sys-color-on-surface); /* Normale Textfarbe */
-     background-color: transparent; /* Kein Hintergrund */
-     padding: 0;
-     margin-left: 0;
-     margin-bottom: 4px; /* Abstand zum Select */
-     text-align: left; /* Standardmäßig links */
-     width: auto; /* Breite auto */
-}
-
-/* Checkbox Label in Select-Gruppen wieder korrekt positionieren */
-.form-group:has(select) input[type="checkbox"] + label {
-    width: auto;
-    flex-grow: 1;
-    margin-bottom: 0;
-    text-align: left;
-    /* Die Checkbox ist in einer eigenen form-group, diese Regel ist evtl. nicht nötig */
-}
-
-
-/* Select spezifisches Padding anpassen */
-.form-group select {
-    padding: 12px; /* Normaleres Padding, da Label nicht überlappt */
-    padding-top: 12px; /* Setzt padding-top von der Input-Regel zurück */
-    padding-bottom: 12px; /* Setzt padding-bottom von der Input-Regel zurück */
-    min-width: 100%; /* Sicherstellen, dass sie die volle Breite einnehmen */
-    /* Benutzerdefinierten Pfeil für Selects (optional, komplexer) */
-    /* appearance: none; */
-    /* background-image: url('...'); */
-    /* background-repeat: no-repeat; */
-    /* background-position: right 12px center; */
-    /* background-size: 12px auto; */
-}
-
-
-/* Stil für die Checkbox alleine (wenn nicht in einer form-group:has(select)) */
-/* Stellt sicher, dass die Checkbox-Zeile gut aussieht */
-.form-group:not(:has(input[type="text"])):not(:has(select)):not(:has(button)) {
-     align-items: flex-start; /* Oben ausrichten */
-}
-.form-group:not(:has(input[type="text"])):not(:has(select)):not(:has(button)) label {
-     position: static; /* Standard Flow */
-     transform: none;
-     font-size: var(--md-sys-typescale-body-large-size);
-     color: var(--md-sys-color-on-surface);
-     background-color: transparent;
-     padding: 0;
-     margin-left: 0;
-     width: auto;
-     text-align: left;
-     flex-grow: 1;
-}
-.form-group:not(:has(input[type="text"])):not(:has(select)):not(:has(button)) input[type="checkbox"] {
-    margin-top: 4px; /* Kleine Ausrichtung */
+    border-color: var(--error-color); /* Rote Umrandung */
+    box-shadow: 0 0 0 0.2rem rgba(220, 53, 69, 0.25); /* Halbtransparenter roter Schatten */
 }
 
 
 /* Stil für die Button-Gruppe */
 .button-group {
-    margin-top: var(--md-sys-spacing-large);
+    margin-top: 30px;
     display: flex;
-    justify-content: flex-end;
-    gap: var(--md-sys-spacing-medium);
+    justify-content: flex-end; /* Buttons rechts ausrichten */
+    gap: 15px; /* Abstand zwischen Buttons */
     flex-wrap: wrap;
 }
 
-/* Stil für die Buttons (Filled Button Stil) */
+/* Stil für die Buttons */
 .button-group button {
-    padding: 10px 24px;
+    padding: 12px 25px; /* Innenabstand */
     border: none;
-    border-radius: var(--md-sys-shape-corner-full); /* Starke Rundung */
-    background-color: var(--md-sys-color-primary);
-    color: var(--md-sys-color-on-primary);
-    font-size: var(--md-sys-typescale-body-large-size);
-    font-weight: bold;
+    border-radius: 6px; /* Abgerundete Ecken */
+    background-color: var(--primary-color);
+    color: var(--on-primary-color); /* Weiße Textfarbe */
+    font-size: 1.05rem; /* Schriftgrösse etwas grösser */
+    font-weight: 600; /* Mittlere Dicke */
     cursor: pointer;
-    transition: background-color 0.2s ease, box-shadow 0.2s ease, opacity 0.2s ease;
+    transition: background-color 0.2s ease, box-shadow 0.2s ease;
     flex-grow: 0;
     flex-shrink: 0;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1); /* Dezenter Schatten */
 }
 
 /* Hover-Effekt für Buttons */
 .button-group button:hover {
-    background-color: var(--md-sys-color-primary);
-    opacity: 0.9;
-    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+    background-color: var(--primary-color-dark); /* Dunkler bei Hover */
+    box-shadow: 0 3px 8px rgba(0, 0, 0, 0.15); /* Schatten wird prominenter */
 }
 
-/* Optional: Aktiver (geklickter) Zustand */
-.button-group button:active {
-     background-color: var(--md-sys-color-primary);
-     opacity: 1;
-     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+/* Fokus-Stil für Barrierefreiheit */
+*:focus {
+    outline: 2px solid var(--primary-color); /* Rahmen in Primärfarbe */
+    outline-offset: 3px; /* Abstand zum Element */
+    border-radius: 4px; /* Passend zu Input-Rundung */
 }
+/* Spezifischer Fokus-Stil für Text-Inputs und Selects, ergänzt den Rand-Stil */
+.form-group input[type="text"]:focus,
+.form-group select:focus {
+     border-color: var(--primary-color); /* Rand wird primär */
+     box-shadow: 0 0 0 0.2rem var(--focus-outline-color); /* Halbtransparenter Schatten */
+     outline: none; /* Entfernt Standard-Outline */
+}
+
 
 /* Optional: Stil für disabled Buttons */
 .button-group button:disabled {
-    background-color: var(--md-sys-color-surface-container-high);
-    color: var(--md-sys-color-outline);
+    background-color: #cccccc;
+    color: #666666;
     cursor: not-allowed;
-    opacity: 1;
+    opacity: 0.7;
     box-shadow: none;
 }
 
-/* Fokus-Stil (für Barrierefreiheit, zusätzlich zum Rand-Stil der Inputs) */
-*:focus {
-    /* Der Rand-Stil wird jetzt am Input/Select selbst im :focus Selektor gesetzt */
-    outline: none; /* Standard-Outline entfernen */
-}
-
 /* Medienabfrage für kleinere Bildschirme */
-@media (max-width: 600px) { /* Angepasst, da Max-Width des Containers 600px ist */
+@media (max-width: 600px) {
     .form-group {
-         flex-direction: column; /* Elemente untereinander */
-         align-items: stretch; /* Elemente strecken sich über die Breite */
-         gap: 8px; /* Angepasster Abstand */
-         padding-top: 0; /* Kein extra Padding, da Labels nicht schweben */
+        flex-direction: column; /* Elemente untereinander */
+        align-items: stretch; /* Elemente strecken sich */
+        gap: 8px;
     }
 
-     /* Labels in Form-Groups auf kleinen Bildschirmen */
-     .form-group label {
-         position: static; /* Deaktivieren Sie die absolute Positionierung */
-         transform: none; /* Entfernen Sie Transformationen */
-         font-size: var(--md-sys-typescale-body-large-size); /* Normale Grösse */
-         color: var(--md-sys-color-on-surface); /* Normale Farbe */
-         background-color: transparent; /* Kein Hintergrund */
-         padding: 0;
-         margin-left: 0;
-         margin-bottom: 4px; /* Abstand zum Input */
-         top: auto; left: auto; z-index: auto; /* Positionierung zurücksetzen */
-         width: auto; /* Breite auto */
-         text-align: left; /* Links ausgerichtet */
-     }
+    .form-group label {
+        width: auto; /* Volle Breite */
+        text-align: left; /* Links ausgerichtet */
+        margin-bottom: 5px; /* Abstand zum Input */
+    }
 
-     /* Input/Select Padding auf kleinen Bildschirmen anpassen */
-     .form-group input[type="text"],
-     .form-group select {
-         padding: 12px; /* Normale Padding */
-         padding-top: 12px; /* Setzt top padding zurück */
-         padding-bottom: 12px; /* Setzt bottom padding zurück */
-         min-width: 100%; /* Sicherstellen, dass sie die volle Breite einnehmen */
-     }
+    .form-group input[type="text"],
+    .form-group select {
+         min-width: 100%; /* Volle Breite */
+    }
 
-
-      /* Spezifische Anpassung für Select-Gruppen auf kleinen Bildschirmen */
-     .form-group:has(select) {
-         /* Bleibt column, gap 8px */
-     }
-     .form-group:has(select) label {
-         order: -1; /* Label zuerst */
-         width: 100%; /* Volle Breite */
-     }
-
-     /* Checkbox Label in Form-Groups (die keine Textinputs/Selects sind) */
-     .form-group:not(:has(input[type="text"])):not(:has(select)):not(:has(button)) {
-         align-items: flex-start; /* Oben ausrichten */
-         flex-direction: row; /* Wieder nebeneinander */
-         gap: 10px;
-     }
-     .form-group:not(:has(input[type="text"])):not(:has(select)):not(:has(button)) label {
-         width: auto; /* Auto Breite */
+     /* Spezialfall Checkbox Label auf kleinen Bildschirmen */
+     .form-group input[type="checkbox"] + label {
          margin-bottom: 0; /* Kein extra Abstand */
-         flex-grow: 1; /* Nimmt Platz ein */
-     }
-     .form-group:not(:has(input[type="text"])):not(:has(select)):not(:has(button)) input[type="checkbox"] {
-          margin-top: 4px; /* Kleine Ausrichtung */
-          flex-shrink: 0;
      }
 
 
@@ -377,6 +213,7 @@ h1 {
     }
 
     h1 {
-        font-size: 1.4rem;
+        font-size: 1.5rem;
+        margin-bottom: 20px;
     }
 }
