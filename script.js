@@ -61,7 +61,7 @@ function playNextAudio() {
          // Spezifische Prüfung, ob es die Liniennummer-Datei war
         if (url.includes("/Nummern/line_number_end/")) {
              console.error("Fehler beim Laden der Liniennummer-Audio-Datei. Die eingegebene Nummer ist wahrscheinlich ungültig oder die Datei fehlt auf GitHub.");
-             alert(`Fehler: Audio-Datei für Liniennummer konnte nicht geladen werden. Ist "${decodeURIComponent(url.split('/').pop().replace('.mp3', ''))}" korrekt?`);
+             // alert(`Fehler: Audio-Datei für Liniennummer konnte nicht geladen werden. Ist "${decodeURIComponent(url.split('/').pop().replace('.mp3', ''))}" korrekt?`);
         }
         currentIndex++; // Springe zum nächsten Titel
         playNextAudio(); // Versuche den nächsten Titel
@@ -98,22 +98,20 @@ function isValidLineNumber(lineNumber) {
     }
     // availableLineNumberFiles enthält die reinen Dateinamen (z.B. ["4.mp3", "M1.mp3"])
     // Wir prüfen, ob der vom Benutzer eingegebene Text + ".mp3" in dieser Liste ist.
-    // Dabei müssen wir sicherstellen, dass Groß-/Kleinschreibung übereinstimmt, falls das Repository case-sensitive ist.
-    // Hier vergleichen wir einfach den eingegebenen String + ".mp3" mit den geladenen Namen.
     const filenameToCheck = lineNumber.trim() + ".mp3";
 
     return availableLineNumberFiles.includes(filenameToCheck);
 }
 
 
-// Funktion, um das Input-Feld als ungültig zu markieren
-function markLineInputInvalid(isInvalid) {
-    const lineInput = document.getElementById("lineInput");
-    if (lineInput) {
+// Funktion, um ein Formularfeld als ungültig zu markieren
+function markFieldInvalid(elementId, isInvalid) {
+    const element = document.getElementById(elementId);
+    if (element) {
         if (isInvalid) {
-            lineInput.classList.add("is-invalid");
+            element.classList.add("is-invalid");
         } else {
-            lineInput.classList.remove("is-invalid");
+            element.classList.remove("is-invalid");
         }
     }
 }
@@ -171,6 +169,7 @@ async function loadDropdowns() {
 
     console.log("Lade Dropdowns und Nummern-Dateiliste...");
     // Laden Sie alle Daten parallel
+    // Wir speichern die rohen Dateinamen (encodeURIComponent wird später beim Bauen der URL angewendet)
     const [zielFiles, viaFiles, sonderFiles, gongFiles, numberFiles] = await Promise.all([
         fetchMp3Filenames("Ziele"),
         fetchMp3Filenames("via"),
@@ -196,8 +195,8 @@ async function loadDropdowns() {
 
     // Event Listener für die Gong-Checkbox hinzufügen
     setupGongCheckboxListener(); // Prüft jetzt auch, ob Gongs geladen wurden
-    // Event Listener für das Linien-Input-Feld hinzufügen (Validierung bei blur, Markierung bei input/focus)
-    setupLineInputListener();
+    // Event Listener für die Formularfelder einrichten (Validierung bei blur, Markierung bei input/focus/change)
+    setupFormFieldListeners();
 }
 
 // Funktion, um den Zustand der Gong-Checkbox zu überwachen
@@ -214,6 +213,8 @@ function setupGongCheckboxListener() {
             if (this.checked) {
                  if (gongsAvailable) {
                     container.style.display = 'flex'; // Zeige das Dropdown an
+                    // Optional: Markierung entfernen, wenn Checkbox angehakt und Dropdown sichtbar wird
+                    // markFieldInvalid('gongSelect', false);
                  } else {
                     console.warn("Gong-Checkbox angehakt, aber keine Gong-Dateien verfügbar.");
                     this.checked = false; // Deaktiviert die Checkbox
@@ -223,6 +224,7 @@ function setupGongCheckboxListener() {
             } else {
                 container.style.display = 'none'; // Verstecke das Dropdown
                  gongSelect.value = ""; // Setze Wert zurück
+                 markFieldInvalid('gongSelect', false); // Markierung entfernen
             }
         });
          // Initialen Zustand beim Laden der Seite: Dropdown verstecken
@@ -233,35 +235,52 @@ function setupGongCheckboxListener() {
     }
 }
 
-// Funktion, um den Event-Listener für das Linien-Input-Feld einzurichten
-function setupLineInputListener() {
+// Funktion, um Event-Listener für alle relevanten Formularfelder einzurichten
+function setupFormFieldListeners() {
     const lineInput = document.getElementById("lineInput");
+    const zielSelect = document.getElementById("zielSelect");
+    const viaSelect = document.getElementById("viaSelect");
+    const sonderSelect = document.getElementById("sonderSelect");
+    const gongSelect = document.getElementById("gongSelect");
+
     if (lineInput) {
-        // Entferne die Fehlermarkierung, sobald der Benutzer anfängt zu tippen oder das Feld fokussiert
-        lineInput.addEventListener('input', () => {
-            markLineInputInvalid(false);
-             // Optional: Validierung live beim Tippen (kann performance kosten bei sehr grossen Listen)
-             // if (lineInput.value.trim() !== "" && !isValidLineNumber(lineInput.value.trim())) {
-             //    markLineInputInvalid(true);
-             // } else {
-             //    markLineInputInvalid(false);
-             // }
-        });
-        lineInput.addEventListener('focus', () => markLineInputInvalid(false));
-        // Validierung bei Verlassen des Feldes
-        lineInput.addEventListener('blur', (event) => {
-            const lineNumber = event.target.value.trim();
-            // Validiere nur, wenn etwas eingegeben wurde
-            if (lineNumber !== "" && !isValidLineNumber(lineNumber)) {
-                markLineInputInvalid(true);
+         // Entferne Fehlermarkierung bei Input oder Fokus
+         lineInput.addEventListener('input', () => markFieldInvalid('lineInput', false));
+         lineInput.addEventListener('focus', () => markFieldInvalid('lineInput', false));
+         // Validiere bei Verlassen des Feldes
+         lineInput.addEventListener('blur', (event) => {
+             const lineNumber = event.target.value.trim();
+             if (lineNumber !== "" && !isValidLineNumber(lineNumber)) {
+                 markFieldInvalid('lineInput', true);
                  console.warn(`Liniennummer "${lineNumber}" ist ungültig.`);
-            } else {
-                markLineInputInvalid(false); // Entferne Markierung, wenn Feld leer oder gültig ist
-            }
-        });
-    } else {
-        console.error("Linien-Input-Feld nicht gefunden!");
-    }
+             } else {
+                 markFieldInvalid('lineInput', false);
+             }
+         });
+    } else console.error("Linien-Input-Feld nicht gefunden!");
+
+    // Bei Selects die Markierung bei Änderung oder Fokus entfernen
+     if (zielSelect) {
+         zielSelect.addEventListener('change', () => markFieldInvalid('zielSelect', false));
+         zielSelect.addEventListener('focus', () => markFieldInvalid('zielSelect', false));
+     } else console.error("Ziel-Select nicht gefunden!");
+
+     if (viaSelect) {
+         viaSelect.addEventListener('change', () => markFieldInvalid('viaSelect', false));
+         viaSelect.addEventListener('focus', () => markFieldInvalid('viaSelect', false));
+     } else console.error("Via-Select nicht gefunden!");
+
+     if (sonderSelect) {
+         sonderSelect.addEventListener('change', () => markFieldInvalid('sonderSelect', false));
+         sonderSelect.addEventListener('focus', () => markFieldInvalid('sonderSelect', false));
+     } else console.error("Sonder-Select nicht gefunden!");
+
+     if (gongSelect) {
+         gongSelect.addEventListener('change', () => markFieldInvalid('gongSelect', false));
+         gongSelect.addEventListener('focus', () => markFieldInvalid('gongSelect', false));
+     } else console.error("Gong-Select nicht gefunden!");
+
+    // Listener für die Gong-Checkbox wird separat in setupGongCheckboxListener eingerichtet
 }
 
 
@@ -275,51 +294,74 @@ function playAnnouncement() {
     const includeGong = document.getElementById("includeGongCheckbox").checked;
     const selectedGong = document.getElementById("gongSelect").value;
 
-    // **VALIDIERUNG DER LINUMMER HIER** (Wenn Linie eingegeben wurde)
-    if (line !== "" && !isValidLineNumber(line)) {
-        markLineInputInvalid(true);
-        alert(`Ungültige Liniennummer "${line}" eingegeben oder Audio-Datei nicht gefunden. Bitte korrigieren Sie die Eingabe.`);
-        console.warn("Ansage abgebrochen: Ungültige Liniennummer.");
-        return; // Ansage abbrechen, wenn Nummer ungültig ist
-    } else {
-         markLineInputInvalid(false); // Entferne Markierung, falls vorher gesetzt und jetzt gültig/leer
+    // Reset aller Fehlermarkierungen zu Beginn
+    markFieldInvalid('lineInput', false);
+    markFieldInvalid('zielSelect', false);
+    markFieldInvalid('viaSelect', false);
+    markFieldInvalid('sonderSelect', false);
+    markFieldInvalid('gongSelect', false);
+
+
+    // --- VALIDIERUNG ---
+    let isValid = true;
+    let alertMessage = "Bitte korrigieren Sie folgende Eingaben:\n";
+
+    // 1. Ziel ist obligatorisch
+    if (ziel === "") {
+        markFieldInvalid('zielSelect', true);
+        alertMessage += "- Fahrziel muss ausgewählt werden.\n";
+        isValid = false;
     }
+
+    // 2. Linie, falls eingegeben, muss gültig sein
+    if (line !== "" && !isValidLineNumber(line)) {
+        markFieldInvalid('lineInput', true);
+        alertMessage += `- Ungültige Liniennummer "${line}".\n`;
+        isValid = false;
+    }
+
+    // 3. Gong, falls Option aktiv, muss ausgewählt sein
+    if (includeGong && selectedGong === "") {
+        markFieldInvalid('gongSelect', true);
+        alertMessage += "- Gong ist ausgewählt, aber kein Gong gewählt.\n";
+        isValid = false;
+    }
+
+    // Via und Sonder sind optional in dieser Ansage, brauchen hier keine 'erforderlich'-Validierung
+
+    if (!isValid) {
+        alert(alertMessage);
+        console.warn("Ansage abgebrochen: Validierungsfehler.");
+        return; // Ansage abbrechen
+    }
+    // --- ENDE VALIDIERUNG ---
 
 
     // Array für die URLs der abzuspielenden Audio-Fragmente
     const urls = [];
 
-    // 0. Gong (optional) - Zuerst hinzufügen! (Nur bei vollständiger Ansage in dieser Version)
-    if (includeGong && selectedGong && selectedGong !== "") {
+    // 0. Gong (optional) - Zuerst hinzufügen!
+    if (includeGong && selectedGong !== "") { // Wurde bereits als gültig geprüft
         urls.push(GITHUB_BASE + "gong/" + encodeURIComponent(selectedGong));
-    } else if (includeGong) {
-         console.warn("Gong Option aktiviert, aber kein Gong ausgewählt. Gong wird übersprungen.");
     }
 
 
     // 1. Linie oder Zug
-    if (line) {
+    if (line) { // Wurde bereits als gültig geprüft, falls nicht leer
         urls.push(GITHUB_BASE + "Fragmente/linie.mp3");
-         // Verwenden Sie die vom Benutzer eingegebene, validierte Nummer
         urls.push(GITHUB_BASE + "Nummern/line_number_end/" + encodeURIComponent(line) + ".mp3");
     } else {
         urls.push(GITHUB_BASE + "Fragmente/zug.mp3");
     }
 
-    // 2. Ziel (Ziel ist obligatorisch)
-    if (ziel && ziel !== "") {
-        urls.push(GITHUB_BASE + "Fragmente/nach.mp3");
-         // Der Ziel-Wert enthält bereits die .mp3-Endung aus dem Select-Option-Value
-        urls.push(GITHUB_BASE + "Ziele/" + encodeURIComponent(ziel));
-    } else {
-        alert("Bitte wählen Sie ein Fahrziel aus, um die vollständige Ansage zu erstellen.");
-        console.warn("Vollständige Ansage abgebrochen: Kein Ziel ausgewählt.");
-        return;
-    }
+    // 2. Ziel (obligatorisch)
+    urls.push(GITHUB_BASE + "Fragmente/nach.mp3"); // Ziel wurde bereits als gültig geprüft
+    urls.push(GITHUB_BASE + "Ziele/" + encodeURIComponent(ziel));
+
 
     // 3. Via (optional)
-    if (via && via !== "" && via !== "keine.mp3") { // Prüfen auf "" und "keine.mp3" (falls Option existiert)
-        urls.push(GITHUB_BASE + "Fragmente/ueber.mp3"); // <-- Korrigierter Dateiname
+    if (via && via !== "" && via !== "keine.mp3") {
+        urls.push(GITHUB_BASE + "Fragmente/ueber.mp3");
         urls.push(GITHUB_BASE + "via/" + encodeURIComponent(via));
     }
 
@@ -337,29 +379,61 @@ function playAnnouncement() {
      }
 }
 
-// Funktion, um nur die Sonderansage abzuspielen (OHNE Gong in dieser Version)
+// Funktion, um nur die Sonderansage abzuspielen (Gong(optional) -> Sonder)
 function playOnlySonderansage() {
     const sonder = document.getElementById("sonderSelect").value;
 
-    // In dieser Version wird der Gong hier NICHT hinzugefügt.
+    const includeGong = document.getElementById("includeGongCheckbox").checked;
+    const selectedGong = document.getElementById("gongSelect").value;
+
+    // Reset Fehlermarkierungen zu Beginn
+    markFieldInvalid('sonderSelect', false);
+    markFieldInvalid('gongSelect', false);
+
+
+    // --- VALIDIERUNG ---
+    let isValid = true;
+    let alertMessage = "Bitte korrigieren Sie folgende Eingaben:\n";
+
+    // 1. Sonderansage ist obligatorisch für DIESE Ansage
+    if (sonder === "") {
+        markFieldInvalid('sonderSelect', true);
+        alertMessage += "- Sonderansage muss ausgewählt werden.\n";
+        isValid = false;
+    }
+
+     // 2. Gong, falls Option aktiv, muss ausgewählt sein
+    if (includeGong && selectedGong === "") {
+        markFieldInvalid('gongSelect', true);
+        alertMessage += "- Gong ist ausgewählt, aber kein Gong gewählt.\n";
+        isValid = false;
+    }
+
+    // Linie, Ziel, Via sind optional für DIESE Ansage
+
+    if (!isValid) {
+        alert(alertMessage);
+        console.warn("'Nur Sonderansage' abgebrochen: Validierungsfehler.");
+        return; // Ansage abbrechen
+    }
+    // --- ENDE VALIDIERUNG ---
+
 
     const urls = [];
 
-    // 1. Sonderansage (obligatorisch für diese spezifische Ansage)
-    if (sonder && sonder !== "") {
-        urls.push(GITHUB_BASE + "Hinweise/" + encodeURIComponent(sonder));
-    } else {
-        alert("Bitte wählen Sie eine Sonderansage aus, um diese abzuspielen.");
-        console.warn("'Nur Sonderansage' abgebrochen: Keine Sonderansage ausgewählt.");
-        return;
+    // 0. Gong (optional) - Zuerst hinzufügen!
+    if (includeGong && selectedGong !== "") { // Validiert
+        urls.push(GITHUB_BASE + "gong/" + encodeURIComponent(selectedGong));
     }
+
+    // 1. Sonderansage (obligatorisch für DIESE Ansage)
+    urls.push(GITHUB_BASE + "Hinweise/" + encodeURIComponent(sonder)); // Validiert
 
     console.log("Konstruierte URLs für 'Nur Sonderansage':", urls);
     startPlayback(urls);
 }
 
-// Funktion, um nur die Via-Ansage abzuspielen (OHNE Gong in dieser Version)
-// (Linie/Zug -> über -> Via)
+// Funktion, um nur die Via-Ansage abzuspielen (Gong(optional) -> Linie/Zug -> über -> Via)
 function playOnlyVia() {
     const line = document.getElementById("lineInput").value.trim();
     const via = document.getElementById("viaSelect").value; // Wert enthält bereits .mp3
@@ -367,39 +441,103 @@ function playOnlyVia() {
     const includeGong = document.getElementById("includeGongCheckbox").checked;
     const selectedGong = document.getElementById("gongSelect").value;
 
-     // **VALIDIERUNG DER LINUMMER HIER** (Wenn Linie eingegeben wurde)
-     if (line !== "" && !isValidLineNumber(line)) {
-        markLineInputInvalid(true);
-        alert(`Ungültige Liniennummer "${line}" eingegeben oder Audio-Datei nicht gefunden. Bitte korrigieren Sie die Eingabe.`);
-        console.warn("'Nur Via' Ansage abgebrochen: Ungültige Liniennummer.");
-        return; // Ansage abbrechen, wenn Nummer ungültig ist
-    } else {
-         markLineInputInvalid(false); // Entferne Markierung, falls vorher gesetzt und jetzt gültig/leer
+    // Reset Fehlermarkierungen zu Beginn
+    markFieldInvalid('lineInput', false);
+    markFieldInvalid('viaSelect', false);
+    markFieldInvalid('gongSelect', false);
+
+
+     // --- VALIDIERUNG ---
+    let isValid = true;
+    let alertMessage = "Bitte korrigieren Sie folgende Eingaben:\n";
+
+    // 1. Via ist obligatorisch für DIESE Ansage (und darf nicht "keine.mp3" sein)
+    if (via === "" || via === "keine.mp3") {
+        markFieldInvalid('viaSelect', true);
+        alertMessage += "- Via Haltestelle muss ausgewählt werden.\n";
+        isValid = false;
     }
+
+     // 2. Linie, falls eingegeben, muss gültig sein
+    if (line !== "" && !isValidLineNumber(line)) {
+        markFieldInvalid('lineInput', true);
+        alertMessage += `- Ungültige Liniennummer "${line}".\n`;
+        isValid = false;
+    }
+
+     // 3. Gong, falls Option aktiv, muss ausgewählt sein
+    if (includeGong && selectedGong === "") {
+        markFieldInvalid('gongSelect', true);
+        alertMessage += "- Gong ist ausgewählt, aber kein Gong gewählt.\n";
+        isValid = false;
+    }
+
+    // Ziel und Sonder sind optional für DIESE Ansage
+
+    if (!isValid) {
+        alert(alertMessage);
+        console.warn("'Nur Via' Ansage abgebrochen: Validierungsfehler.");
+        return; // Ansage abbrechen
+    }
+    // --- ENDE VALIDIERUNG ---
 
 
      const urls = [];
 
+    // 0. Gong (optional) - Zuerst hinzufügen!
+    if (includeGong && selectedGong !== "") { // Validiert
+        urls.push(GITHUB_BASE + "gong/" + encodeURIComponent(selectedGong));
+    }
+
     // 1. Linie oder Zug (immer dabei, auch wenn keine Linie eingegeben)
-     if (line) {
+     if (line) { // Validiert, falls nicht leer
         urls.push(GITHUB_BASE + "Fragmente/linie.mp3");
-        urls.push(GITHUB_BASE + "Nummern/line_number_end/" + encodeURIComponent(line) + ".mp3"); // <-- Verwenden Sie die vom Benutzer eingegebene, validierte Nummer
+        urls.push(GITHUB_BASE + "Nummern/line_number_end/" + encodeURIComponent(line) + ".mp3");
     } else {
         urls.push(GITHUB_BASE + "Fragmente/zug.mp3");
     }
 
-    // 2. Via (Via ist obligatorisch für diese spezielle Ansage)
-    if (via && via !== "" && via !== "keine.mp3") {
-        urls.push(GITHUB_BASE + "Fragmente/ueber.mp3"); // <-- Korrigierter Dateiname
-        urls.push(GITHUB_BASE + "via/" + encodeURIComponent(via));
-    } else {
-        alert("Bitte wählen Sie eine Via-Haltestelle aus, um diese Ansage zu erstellen ('Linie/Zug über Via').");
-        console.warn("'Nur Via' Ansage abgebrochen: Keine Via-Haltestelle ausgewählt.");
-        return; // Diese Ansage macht ohne Via-Haltestelle keinen Sinn
-    }
+    // 2. Via (obligatorisch für DIESE Ansage)
+    urls.push(GITHUB_BASE + "Fragmente/ueber.mp3");
+    urls.push(GITHUB_BASE + "via/" + encodeURIComponent(via)); // Validiert
 
     console.log("Konstruierte URLs für 'Nur Via':", urls);
     startPlayback(urls);
+}
+
+// Funktion, um nur den ausgewählten Gong abzuspielen
+function playOnlyGong() {
+    const selectedGong = document.getElementById("gongSelect").value;
+    const includeGong = document.getElementById("includeGongCheckbox").checked; // Prüfen, ob die Option überhaupt aktiv ist
+
+     // Reset Fehlermarkierung zu Beginn
+    markFieldInvalid('gongSelect', false);
+
+
+     // --- VALIDIERUNG ---
+    let isValid = true;
+    let alertMessage = "Bitte korrigieren Sie folgende Eingaben:\n";
+
+    // 1. Gong muss ausgewählt sein (Checkbox muss NICHT aktiv sein, da dieser Button spezifisch ist)
+    if (selectedGong === "") {
+        markFieldInvalid('gongSelect', true);
+        alertMessage += "- Gong muss ausgewählt werden, um nur Gong abzuspielen.\n";
+        isValid = false;
+    }
+
+     // Hier keine weitere Validierung, da nur der Gong relevant ist
+
+    if (!isValid) {
+        alert(alertMessage);
+        console.warn("'Nur Gong' abgebrochen: Validierungsfehler.");
+        return; // Ansage abbrechen
+    }
+    // --- ENDE VALIDIERUNG ---
+
+    // URL für den ausgewählten Gong
+    const gongUrl = GITHUB_BASE + "gong/" + encodeURIComponent(selectedGong);
+    console.log("Spiele nur Gong ab:", gongUrl);
+    startPlayback([gongUrl]); // Einzelne URL als Sequenz starten
 }
 
 
@@ -407,8 +545,9 @@ function playOnlyVia() {
 document.getElementById("playBtn").addEventListener("click", playAnnouncement);
 document.getElementById("sonderBtn").addEventListener("click", playOnlySonderansage);
 document.getElementById("viaBtn").addEventListener("click", playOnlyVia);
+document.getElementById("gongBtn").addEventListener("click", playOnlyGong); // Listener für neuen Button
 
 // Dropdowns laden, Nummernliste laden und Listener einrichten, sobald das DOM bereit ist
 document.addEventListener("DOMContentLoaded", () => {
-    loadDropdowns(); // Diese Funktion ruft jetzt setupGongCheckboxListener und setupLineInputListener auf
+    loadDropdowns(); // Ruft setupGongCheckboxListener und setupFormFieldListeners auf
 });
