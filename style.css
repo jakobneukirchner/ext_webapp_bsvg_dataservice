@@ -117,10 +117,26 @@ h1 {
     box-shadow: 0 0 0 0.2rem rgba(220, 53, 69, 0.25); /* Halbtransparenter roter Schatten */
 }
 
+/* Verbesserter Stil für Select-Dropdowns */
+.form-group select {
+    padding: 12px 15px; /* Etwas mehr Innenabstand für bessere Klickbarkeit */
+    height: auto; /* Automatische Höhe für Mehrfachauswahl */
+    min-height: 44px; /* Mindesthöhe für bessere Touch-Ziele */
+    /* Zusätzlicher Stil für den Dropdown-Pfeil (optional, falls Standard nicht gefällt) */
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%236c757d'%3E%3Cpath d='M7 10l5 5 5-5z'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 10px center;
+    background-size: 20px;
+    padding-right: 35px; /* Platz für den benutzerdefinierten Pfeil */
+    cursor: pointer;
+}
 
 /* Stil für die Button-Gruppe */
 .button-group {
-    margin-top: 30px;
+    margin-top: 20px; /* Etwas weniger Abstand zwischen den Gruppen */
     display: flex;
     justify-content: flex-end; /* Buttons rechts ausrichten */
     gap: 15px; /* Abstand zwischen Buttons */
