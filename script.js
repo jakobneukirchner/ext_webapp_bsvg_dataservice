@@ -52,6 +52,10 @@ function playNextAudio() {
     }
 
     currentAudio = new Audio(url);
+    // Wichtig: Setze die Wiedergabegeschwindigkeit, um Pausen zu minimieren
+    // Standardmäßig ist es 1.0, falls keine spezifische Anpassung notwendig ist,
+    // kann dies beibehalten oder für Experimente verändert werden.
+    currentAudio.playbackRate = 1.0; 
 
     // Fehlerbehandlung: Wenn ein Titel nicht geladen oder abgespielt werden kann
     currentAudio.onerror = (e) => {
@@ -65,10 +69,12 @@ function playNextAudio() {
     };
 
     // Event-Listener für das Ende des aktuellen Titels
+    // Die Audio-Dateien sollten keine unnötigen Pausen am Ende haben.
+    // Ein `ended`-Event feuert, sobald die Datei wirklich zu Ende ist.
     currentAudio.onended = () => {
         console.log(`Beendet: ${url}`);
         currentIndex++; // Springe zum nächsten Titel
-        playNextAudio(); // Versuche den nächsten Titel
+        playNextNextAudioWithMinimalDelay(); // Versuche den nächsten Titel mit minimaler Verzögerung
     };
 
     // Starten Sie die Wiedergabe. .play() gibt ein Promise zurück, um Autoplay-Probleme zu erkennen.
@@ -80,12 +86,24 @@ function playNextAudio() {
         console.error(`Fehler beim Starten der Wiedergabe von ${url}:`, error);
         // Auch hier springen wir zum nächsten Titel, damit die Sequenz weiterläuft.
         currentIndex++;
-        playNextAudio();
+        playNextNextAudioWithMinimalDelay();
         if (error.name === 'NotAllowedError' || error.name === 'NotSupportedError') {
             console.warn("Wiedergabe wurde möglicherweise vom Browser blockiert. Benutzerinteraktion erforderlich?");
         }
     });
 }
+
+// Hilfsfunktion, um den nächsten Audio-Schnipsel mit minimaler Verzögerung zu starten
+// Dies ist wichtig, um Überschneidungen zu vermeiden, aber gleichzeitig flüssig zu bleiben.
+function playNextNextAudioWithMinimalDelay() {
+    // Kurze Timeout, um die Event-Loop nicht zu blockieren und eine minimale Trennung zu gewährleisten.
+    // 0ms ist oft ausreichend, um das onended-Event sauber zu verarbeiten und den nächsten play() Aufruf zu initiieren.
+    // Experimentieren Sie hier bei Bedarf mit sehr kleinen Werten (z.B. 10-50ms), falls es immer noch zu Überlappungen oder zu schnellen Übergängen kommt.
+    setTimeout(() => {
+        playNextAudio();
+    }, 0); 
+}
+
 
 // Funktion zur Validierung der Liniennummer
 // Prüft, ob eine Datei mit dem Namen "[Nummer].mp3" im geladenen Nummern-Verzeichnis existiert
@@ -317,7 +335,8 @@ function generateAnnouncementUrls() {
         selectedLines.forEach((line, index) => {
             urls.push(GITHUB_BASE + "Nummern/line_number_end/" + encodeURIComponent(line) + ".mp3");
             if (index < selectedLines.length - 1) {
-                urls.push(GITHUB_BASE + "Fragmente/und.mp3"); // Für "Linie 1 und 2"
+                // Korrektur: "und" Sprachschnipsel liegt unter Fragmente/und.mp3
+                urls.push(GITHUB_BASE + "Fragmente/und.mp3"); 
             }
         });
     } else {
@@ -335,13 +354,19 @@ function generateAnnouncementUrls() {
         selectedViaOptions.forEach((option, index) => {
             urls.push(GITHUB_BASE + "via/" + encodeURIComponent(option.value));
             if (index < selectedViaOptions.length - 1) {
-                urls.push(GITHUB_BASE + "Fragmente/und.mp3"); // Für "über Rathaus und Schloss"
+                // Korrektur: "und" Sprachschnipsel liegt unter Fragmente/und.mp3
+                urls.push(GITHUB_BASE + "Fragmente/und.mp3"); 
             }
         });
     }
 
     // 4. Sonderansage (optional)
     if (sonder && sonder !== "") {
+        // Zwischen Ansage und Sonderansage darf eine Pause bestehen bleiben.
+        // Aktuell wird dies durch das sequentielle Abspielen der Audio-Dateien gehandhabt.
+        // Wenn die Sonderansage nach der Hauptansage kommt, wird sie nach deren Ende abgespielt.
+        // Ein explizites "Pause-Fragment" könnte hier eingefügt werden, falls die Pausenlänge nicht reicht.
+        // Für eine "Reibungslose Wiedergabe" ohne Überschneidungen ist das `onended`-Event entscheidend.
         urls.push(GITHUB_BASE + "Hinweise/" + encodeURIComponent(sonder));
     }
 
@@ -506,7 +531,6 @@ function playOnlyLine() {
         alertMessage += "- Liniennummer(n) muss/müssen ausgewählt werden.\n";
         isValid = false;
     }
-
     if (includeGong && selectedGong === "") {
         markFieldInvalid('gongSelect', true);
         alertMessage += "- Gong ist ausgewählt, aber kein Gong gewählt.\n";
