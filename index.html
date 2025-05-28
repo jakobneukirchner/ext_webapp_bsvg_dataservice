@@ -25,10 +25,15 @@
         </div>
 
         <div class="form-group">
-            <label for="lineSelect">Liniennummer(n):</label>
-            <select id="lineSelect" multiple size="5">
-                <option value="">– Keine Linie wählen –</option>
-            </select>
+            <label>Liniennummer(n):</label>
+            <div id="lineSelectContainer" class="custom-select-container">
+                <button type="button" class="select-button" id="lineSelectButton">
+                    <span>– Keine Linie wählen –</span>
+                    <span class="arrow-down"></span>
+                </button>
+                <div class="select-dropdown" id="lineSelectDropdown">
+                    </div>
+            </div>
         </div>
 
         <div class="form-group">
@@ -39,10 +44,15 @@
         </div>
 
         <div class="form-group">
-            <label for="viaSelect">Via Haltestelle(n):</label>
-            <select id="viaSelect" multiple size="5">
-                <option value="">– Keine Via –</option>
-            </select>
+            <label>Via Haltestelle(n):</label>
+            <div id="viaSelectContainer" class="custom-select-container">
+                <button type="button" class="select-button" id="viaSelectButton">
+                    <span>– Keine Via –</span>
+                    <span class="arrow-down"></span>
+                </button>
+                <div class="select-dropdown" id="viaSelectDropdown">
+                    </div>
+            </div>
         </div>
 
         <div class="form-group">
