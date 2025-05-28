@@ -1,172 +1,139 @@
-/* Allgemeine Stile */
+/* Allgemeine Stile und Resets */
+*, *::before, *::after {
+    box-sizing: border-box;
+}
+
 :root {
-    --primary-color: #4CAF50; /* Ein frisches Grün */
-    --secondary-color: #388E3C; /* Ein dunkleres Grün */
-    --background-gradient-start: #E0F7FA; /* Sehr helles Blau */
-    --background-gradient-end: #B2EBF2;    /* Etwas dunkleres Hellblau */
-    --text-color-dark: #333; /* Dunkler Text für bessere Lesbarkeit auf hellem Hintergrund */
-    --text-color-light: #666; /* Hellerer Text für sekundäre Elemente */
-    --surface-color: #FFFFFF; /* Weiß für den Haupt-Container */
-    --border-color: #BDBDBD; /* Hellerer Rand */
-    --error-color: #EF5350; /* Ein klares Rot */
-    --focus-outline-color: rgba(76, 175, 80, 0.5); /* Halbtransparentes Grün für Fokus */
-    --on-primary-color: #FFFFFF; /* Text auf Primärfarbe (weiß) */
+    /* Eigene Farbpalette */
+    --primary-color: #5a8dee; /* Ein angenehmer Blauton */
+    --primary-color-dark: #4a7ad2; /* Dunkler für Hover */
+    --background-color: #f8f9fa; /* Sehr heller Hintergrund */
+    --surface-color: #ffffff; /* Weiß für den Haupt-Container */
+    --text-color: #343a40; /* Dunkles Grau für Text */
+    --text-color-light: #6c757d; /* Helleres Grau für Platzhalter/schwachen Text */
+    --border-color: #ced4da; /* Heller Rand */
+    --error-color: #dc3545; /* Rot für Fehler */
+    --focus-outline-color: rgba(90, 141, 238, 0.5); /* Halbtransparentes Blau für Fokus */
+    --on-primary-color: #ffffff; /* Text auf Primärfarbe (explizit hinzugefügt) */
 }
 
 body {
-    font-family: 'Kanit', sans-serif; /* Kanit Font */
+    /* Nutzt Kanit von Google Fonts (muss im HTML eingebunden sein) */
+    font-family: "Kanit", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen-Sans, Ubuntu, Cantarell, "Helvetica Neue", sans-serif;
     line-height: 1.6;
-    margin: 0;
-    padding: 0;
-    background: linear-gradient(135deg, var(--background-gradient-start) 0%, var(--background-gradient-end) 100%);
+    background-color: var(--background-color);
+    color: var(--text-color);
     display: flex;
     justify-content: center;
-    align-items: center;
+    align-items: flex-start; /* Oben ausrichten, gut für längere Formulare */
     min-height: 100vh;
-    overflow: auto; /* Erlaubt Scrollen, falls Inhalt zu lang */
-    color: var(--text-color-dark); /* Standardtextfarbe ist jetzt dunkler */
-    position: relative;
-}
-
-/* Der body::before Overlay wird entfernt, da das Design heller sein soll */
-/* body::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background-color: var(--dark-overlay);
-    z-index: 1;
-} */
-
-.main-container {
-    position: relative;
-    z-index: 2;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    width: 90%;
-    max-width: 800px;
-    padding: 40px 20px;
-    /* padding-bottom: 120px; -- Entfernt, da Absperrband weg ist */
-    background-color: var(--surface-color); /* Hellerer Hintergrund für den Container */
-    border-radius: 20px;
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1); /* Dezenterer Schatten */
-    backdrop-filter: blur(8px); /* Etwas stärkerer Blur für den Glas-Effekt */
-    -webkit-backdrop-filter: blur(8px);
-    text-align: center;
-    border: 1px solid rgba(255, 255, 255, 0.3); /* Leichter weißer Rand für Glas-Effekt */
-
-    /* ANIMATION FÜR MORPH-EFFEKT */
-    opacity: 0;
-    transform-origin: center bottom;
-    animation: morphIn 1.8s forwards ease-out;
-}
-
-@keyframes morphIn {
-    from {
-        opacity: 0;
-        transform: translateY(150px) scaleY(0.1) scaleX(0.8) rotateX(45deg);
-    }
-    30% {
-        opacity: 1;
-        transform: translateY(-20px) scaleY(1.05) scaleX(1.02) rotateX(-5deg);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0) scale(1) rotateX(0deg);
-    }
-}
-
-/* Logo und Support-Text sind im Original-HTML nicht vorhanden, aber Stile können beibehalten werden, falls hinzugefügt */
-.logo {
-    height: 80px;
-    margin-bottom: 30px;
-    object-fit: contain;
-    transition: transform 0.3s ease-in-out;
-}
-
-.logo:hover {
-    transform: scale(1.05) rotate(2deg);
-}
-
-h1 {
-    color: var(--primary-color); /* Überschrift in Primärfarbe */
     margin: 0;
-    font-size: 3.5em; /* Etwas kleiner, da heller */
-    letter-spacing: 2px;
-    text-transform: uppercase;
-    text-shadow: 1px 1px 4px rgba(0, 0, 0, 0.2); /* Dezenter Schatten */
+    padding: 20px;
+    box-sizing: border-box;
+    overflow-y: auto; /* Ermöglicht Scrollen, wenn der Inhalt grösser ist */
 }
 
-.support-text {
-    color: var(--text-color-dark); /* Support-Text in dunkler Farbe */
-    font-size: 1.1em;
-    margin-top: 25px;
-    margin-bottom: 15px;
-    text-shadow: none; /* Schatten entfernt */
+/* Stil für den Haupt-Container */
+.container {
+    background-color: var(--surface-color);
+    padding: 30px;
+    border-radius: 8px; /* Mittlere Rundung */
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08); /* Dezenter Schatten */
+    max-width: 600px; /* Maximale Breite */
+    width: 100%;
+    box-sizing: border-box;
+    margin-top: 40px; /* Abstand oben */
+    margin-bottom: 40px; /* Abstand unten */
 }
 
-/* stripe-buy-button ist nicht Teil des Kern-Codes, aber Stil kann bleiben */
-stripe-buy-button {
+/* Stil für die Überschrift */
+h1 {
+    text-align: center;
+    color: var(--primary-color);
     margin-top: 0;
+    margin-bottom: 30px;
+    font-size: 2rem; /* Grössere Überschrift */
+    font-weight: 600; /* Mittlere Dicke bei Kanit */
+    letter-spacing: 0.05em; /* Leichter Zeichenabstand */
 }
 
-
-/* --- ABSPERRBAND ENTFERNT --- */
-/* Alle .running-barricade-Wrapper, -content, -text und @keyframes marquee wurden entfernt */
-
-
-/* Formulargruppen und Labels */
+/* Stil für einzelne Formularzeilen */
 .form-group {
-    margin-bottom: 15px; /* Etwas weniger Abstand */
-    display: flex;
-    align-items: center;
-    gap: 15px;
-    flex-wrap: wrap;
+    margin-bottom: 20px; /* Abstand zwischen den Zeilen */
+    display: flex; /* Nutzt Flexbox für die horizontale Ausrichtung */
+    align-items: center; /* Zentriert Label und Input vertikal */
+    gap: 15px; /* Abstand zwischen Label und Input/Select */
+    flex-wrap: wrap; /* Erlaubt Umbruch auf kleinen Bildschirmen */
 }
 
+/* Stil für Labels */
 .form-group label {
-    font-weight: 600; /* Etwas fetter für bessere Sichtbarkeit */
-    color: var(--text-color-dark);
-    width: 180px;
-    text-align: right;
-    flex-shrink: 0;
+    display: block;
+    margin-bottom: 0;
+    font-weight: 500; /* Mittlere Dicke */
+    font-size: 1rem;
+    color: var(--text-color);
+    width: 180px; /* Feste Breite für Desktop-Ausrichtung */
+    text-align: right; /* Rechtsbündig */
+    flex-shrink: 0; /* Verhindert, dass das Label kleiner wird */
 }
 
+/* Spezialfall für das Label der Gong-Checkbox */
 .form-group input[type="checkbox"] + label {
-    font-weight: normal;
-    color: var(--text-color-dark);
+    width: auto; /* Auto-Breite */
+    text-align: left; /* Links ausgerichtet */
+    font-weight: normal; /* Normale Dicke */
+    cursor: pointer;
+    flex-grow: 1; /* Nimmt verfügbaren Platz ein */
+    color: var(--text-color); /* Normale Textfarbe */
 }
 
 /* Stil für Input-Felder und Standard-Select-Dropdowns */
 .form-group input[type="text"],
 .form-group select {
-    flex-grow: 1;
-    padding: 10px 12px; /* Etwas kleinerer Innenabstand */
-    border: 1px solid var(--border-color);
-    border-radius: 6px; /* Etwas mehr Rundung */
-    font-size: 0.95rem; /* Etwas kleinere Schrift */
-    color: var(--text-color-dark);
-    background-color: var(--surface-color);
-    box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.05); /* Dezenter innerer Schatten */
+    flex-grow: 1; /* Füllt den verfügbaren Platz */
+    padding: 12px 15px; /* Innenabstand */
+    border: 1px solid var(--border-color); /* Heller Rand */
+    border-radius: 4px; /* Leichte Rundung */
+    font-size: 1rem;
+    color: var(--text-color);
+    background-color: var(--surface-color); /* Weißer Hintergrund */
+    box-sizing: border-box;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease; /* Sanfte Übergänge */
+    min-width: 150px; /* Mindestbreite */
 }
 
-/* Stil für ungültige Eingabe */
+/* Stil für Platzhalter-Text */
+.form-group input[type="text"]::placeholder,
+.form-group select option[value=""]:first-child {
+    color: var(--text-color-light); /* Hellere Farbe */
+    opacity: 1; /* Stellt sicher, dass es nicht transparent ist */
+}
+
+/* Stil für ungültige Eingabe - gilt jetzt für Input[text] UND Select */
 .form-group input[type="text"].is-invalid,
 .form-group select.is-invalid,
 .custom-select-container.is-invalid .select-button {
-    border-color: var(--error-color);
-    box-shadow: 0 0 0 0.2rem rgba(239, 83, 80, 0.25); /* Angepasster Schatten für Error-Farbe */
+    border-color: var(--error-color); /* Rote Umrandung */
+    box-shadow: 0 0 0 0.2rem rgba(220, 53, 69, 0.25); /* Halbtransparenter roter Schatten */
 }
+
 
 /* Verbesserter Stil für Standard-Select-Dropdowns */
 .form-group select {
-    min-height: 40px; /* Etwas kleinere Mindesthöhe */
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23666'%3E%3Cpath d='M7 10l5 5 5-5z'/%3E%3C/svg%3E"); /* Pfeilfarbe angepasst */
-    padding-right: 30px; /* Platz für den Pfeil */
+    padding: 12px 15px; /* Etwas mehr Innenabstand für bessere Klickbarkeit */
+    height: auto; /* Automatische Höhe für Mehrfachauswahl */
+    min-height: 44px; /* Mindesthöhe für bessere Touch-Ziele */
+    /* Zusätzlicher Stil für den Dropdown-Pfeil (optional, falls Standard nicht gefällt) */
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%236c757d'%3E%3Cpath d='M7 10l5 5 5-5z'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 10px center;
+    background-size: 20px;
+    padding-right: 35px; /* Platz für den benutzerdefinierten Pfeil */
+    cursor: pointer;
 }
 
 /* Stil für benutzerdefinierte Select-Dropdowns (mit Checkboxen) */
@@ -182,17 +149,16 @@ stripe-buy-button {
     justify-content: space-between;
     align-items: center;
     width: 100%;
-    padding: 10px 12px; /* Etwas kleinerer Innenabstand */
+    padding: 12px 15px;
     border: 1px solid var(--border-color);
-    border-radius: 6px; /* Etwas mehr Rundung */
+    border-radius: 4px;
     background-color: var(--surface-color);
-    color: var(--text-color-dark);
-    font-size: 0.95rem; /* Etwas kleinere Schrift */
+    color: var(--text-color);
+    font-size: 1rem;
     cursor: pointer;
     transition: border-color 0.2s ease, box-shadow 0.2s ease;
     box-sizing: border-box;
-    text-align: left;
-    box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.05);
+    text-align: left; /* Text linksbündig */
 }
 
 .select-button:hover {
@@ -205,63 +171,119 @@ stripe-buy-button {
 }
 
 .select-button .arrow-down {
-    border-top: 5px solid var(--text-color-dark); /* Pfeilfarbe angepasst */
+    width: 0;
+    height: 0;
+    border-left: 5px solid transparent;
+    border-right: 5px solid transparent;
+    border-top: 5px solid var(--text-color);
+    transition: transform 0.2s ease;
+}
+
+.select-button.active .arrow-down {
+    transform: rotate(180deg);
 }
 
 .select-dropdown {
-    max-height: 180px; /* Etwas kleinere Max-Höhe */
+    position: absolute;
+    top: 100%; /* Unter dem Button positionieren */
+    left: 0;
+    width: 100%;
+    max-height: 200px; /* Max. Höhe für Scrollbarkeit */
+    overflow-y: auto;
+    background-color: var(--surface-color);
     border: 1px solid var(--border-color);
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1); /* Weniger prominenter Schatten */
-    padding: 3px 0; /* Weniger Innenabstand */
+    border-radius: 4px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    z-index: 10; /* Über anderen Elementen anzeigen */
+    display: none; /* Standardmäßig versteckt */
+    padding: 5px 0; /* Innenabstand */
+}
+
+.select-dropdown.show {
+    display: block;
 }
 
 .checkbox-option {
-    padding: 6px 12px; /* Deutlich kleinerer Innenabstand */
-    font-size: 0.9rem; /* Kleinere Schrift für Optionen */
+    display: flex;
+    align-items: center;
+    padding: 8px 15px;
+    cursor: pointer;
+    font-size: 0.95rem;
+    color: var(--text-color);
+}
+
+.checkbox-option:hover {
+    background-color: var(--background-color);
 }
 
 .checkbox-option input[type="checkbox"] {
-    margin-right: 8px; /* Etwas weniger Abstand */
-    width: 16px; /* Kleinere Checkbox */
-    height: 16px; /* Kleinere Checkbox */
-    border-radius: 2px; /* Weniger Rundung */
+    margin-right: 10px;
+    /* Grundlegende Checkbox-Stile */
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+    width: 18px;
+    height: 18px;
+    border: 1px solid var(--border-color);
+    border-radius: 3px;
+    background-color: var(--surface-color);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background-color 0.2s, border-color 0.2s;
+}
+
+.checkbox-option input[type="checkbox"]:checked {
+    background-color: var(--primary-color);
+    border-color: var(--primary-color);
 }
 
 .checkbox-option input[type="checkbox"]:checked::after {
-    font-size: 10px; /* Kleineres Häkchen */
+    content: '✔'; /* Häkchen-Symbol */
+    color: var(--on-primary-color);
+    font-size: 12px;
 }
 
 
 /* Stil für die Button-Gruppe */
 .button-group {
-    margin-top: 15px; /* Etwas weniger Abstand */
-    gap: 10px; /* Etwas weniger Abstand zwischen Buttons */
-    justify-content: center; /* Buttons zentrieren */
+    margin-top: 20px; /* Etwas weniger Abstand zwischen den Gruppen */
+    display: flex;
+    justify-content: flex-end; /* Buttons rechts ausrichten */
+    gap: 15px; /* Abstand zwischen Buttons */
+    flex-wrap: wrap;
 }
 
 /* Stil für die Buttons */
 .button-group button {
-    padding: 10px 20px; /* Etwas kleinerer Innenabstand */
-    border-radius: 8px; /* Mehr Rundung */
+    padding: 12px 25px; /* Innenabstand */
+    border: none;
+    border-radius: 6px; /* Abgerundete Ecken */
     background-color: var(--primary-color);
-    color: var(--on-primary-color);
-    font-size: 0.95rem; /* Etwas kleinere Schrift */
-    font-weight: 600;
-    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1); /* Dezenterer Schatten */
+    color: var(--on-primary-color); /* Weiße Textfarbe */
+    font-size: 1.05rem; /* Schriftgrösse etwas grösser */
+    font-weight: 600; /* Mittlere Dicke */
+    cursor: pointer;
+    transition: background-color 0.2s ease, box-shadow 0.2s ease;
+    flex-grow: 0;
+    flex-shrink: 0;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1); /* Dezenter Schatten */
 }
 
 /* Hover-Effekt für Buttons */
 .button-group button:hover {
-    background-color: var(--secondary-color); /* Dunkler bei Hover */
-    box-shadow: 0 3px 10px rgba(0, 0, 0, 0.15);
+    background-color: var(--primary-color-dark); /* Dunkler bei Hover */
+    box-shadow: 0 3px 8px rgba(0, 0, 0, 0.15); /* Schatten wird prominenter */
 }
 
 /* Fokus-Stil für Barrierefreiheit */
 *:focus {
-    outline: 2px solid var(--primary-color);
-    outline-offset: 2px; /* Etwas weniger Abstand */
-    border-radius: 6px; /* Passend zu Input-Rundung */
+    outline: 2px solid var(--primary-color); /* Rahmen in Primärfarbe */
+    outline-offset: 3px; /* Abstand zum Element */
+    border-radius: 4px; /* Passend zu Input-Rundung */
 }
+/* Spezifischer Fokus-Stil für Text-Inputs und Selects, ergänzt den Rand-Stil */
 .form-group input[type="text"]:focus,
 .form-group select:focus,
 .custom-select-container .select-button:focus {
@@ -273,29 +295,58 @@ stripe-buy-button {
 
 /* Optional: Stil für disabled Buttons */
 .button-group button:disabled {
-    background-color: #E0E0E0; /* Helleres Grau */
-    color: #9E9E9E; /* Helleres Grau */
+    background-color: #cccccc;
+    color: #666666;
     cursor: not-allowed;
-    opacity: 0.8;
+    opacity: 0.7;
     box-shadow: none;
 }
 
 /* Stil für das benutzerdefinierte Nachrichtenfeld */
 .message-box-overlay {
-    background-color: rgba(0, 0, 0, 0.4); /* Etwas hellerer Overlay */
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+    display: none; /* Standardmäßig versteckt */
 }
 
 .message-box-content {
-    box-shadow: 0 5px 20px rgba(0, 0, 0, 0.2); /* Dezenterer Schatten */
+    background-color: var(--surface-color);
+    padding: 25px;
+    border-radius: 8px;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+    text-align: center;
+    max-width: 400px;
+    width: 90%;
+    position: relative;
+}
+
+.message-box-content p {
+    margin-bottom: 20px;
+    font-size: 1.1rem;
+    color: var(--text-color);
 }
 
 .message-box-content button {
+    padding: 10px 20px;
     background-color: var(--primary-color);
     color: var(--on-primary-color);
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 1rem;
+    transition: background-color 0.2s ease;
 }
 
 .message-box-content button:hover {
-    background-color: var(--secondary-color);
+    background-color: var(--primary-color-dark);
 }
 
 
@@ -314,7 +365,7 @@ stripe-buy-button {
 
     .form-group input[type="text"],
     .form-group select,
-    .custom-select-container {
+    .custom-select-container { /* Auch den Container anpassen */
         min-width: 100%;
     }
 
@@ -323,11 +374,11 @@ stripe-buy-button {
     }
 
     .button-group {
-        flex-direction: column;
-        align-items: stretch;
+        flex-direction: column; /* Buttons untereinander auf kleinen Bildschirmen */
+        align-items: stretch; /* Buttons füllen die Breite aus */
     }
 
     .button-group button {
-        width: 100%;
+        width: 100%; /* Buttons nehmen volle Breite ein */
     }
 }
