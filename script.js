@@ -520,6 +520,7 @@ function playOnlyVia() {
 
     if (!isValid) {
         showMessageBox(alertMessage);
+        console.warn("'Nur Via' Ansage abgebrochen: Validierungsfehler.");
         return;
     }
 
@@ -549,7 +550,9 @@ function playOnlyVia() {
             urls.push(GITHUB_BASE + "Fragmente/und.mp3");
         }
     });
-    downloadAudioSequence(urls, 'via_ansage.wav');
+
+    console.log("Konstruierte URLs für 'Nur Via':", urls);
+    startPlayback(urls);
 }
 
 function downloadOnlyGong() {
