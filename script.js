@@ -76,8 +76,8 @@ function playNextAudio() {
         console.log(`Wiedergabe gestartet: ${url}`);
     }).catch(error => {
         console.error(`Fehler beim Starten der Wiedergabe von ${url}:`, error);
-        currentIndex++;
-        playNextNextAudioWithMinimalDelay();
+        currentIndex++; // Index vorrücken, auch wenn Wiedergabe fehlschlägt
+        playNextNextAudioWithMinimalDelay(); // Versuche den nächsten Titel
         if (error.name === 'NotAllowedError' || error.name === 'NotSupportedError') {
             console.warn("Wiedergabe wurde möglicherweise vom Browser blockiert. Benutzerinteraktion erforderlich?");
         }
@@ -86,12 +86,14 @@ function playNextAudio() {
 
 // Hilfsfunktion, um den nächsten Audio-Schnipsel mit minimaler Verzögerung zu starten
 function playNextNextAudioWithMinimalDelay() {
-    // Kurze Timeout, um die Event-Loop nicht zu blockieren und eine minimale Trennung zu gewährleisten.
-    // 0ms ist oft ausreichend, um das onended-Event sauber zu verarbeiten und den nächsten play() Aufruf zu initiieren.
-    // Falls es immer noch zu Überlappungen kommt, liegt es wahrscheinlich an den Audio-Dateien selbst (z.B. Stille am Ende).
+    // Eine kleine Verzögerung (z.B. 50ms) kann helfen, um sicherzustellen, dass das vorherige Audio
+    // vollständig verarbeitet wurde und um minimale, aber hörbare Trennungen zu ermöglichen,
+    // falls die Audio-Dateien selbst keine Stille am Ende haben.
+    // Experimentieren Sie mit diesem Wert, falls Überschneidungen weiterhin auftreten.
+    const delay = 50; // Millisekunden
     setTimeout(() => {
         playNextAudio();
-    }, 0); 
+    }, delay);
 }
 
 // Funktion zur Validierung der Liniennummer (jetzt für Dropdown-Werte)
@@ -267,11 +269,13 @@ async function loadDropdowns() {
         }
     );
 
+    // Für Via-Dateien müssen wir die .mp3-Endung für die Anzeige entfernen, aber für die URL beibehalten
+    const viaOptionsForDropdown = viaFiles.map(name => decodeURIComponent(name.replace(".mp3", "")));
     createMultiSelectDropdown(
         'viaSelectContainer',
         'viaSelectButton',
         'viaSelectDropdown',
-        viaFiles.map(name => decodeURIComponent(name.replace(".mp3", ""))), // Optionen sind die Via-Haltestellen
+        viaOptionsForDropdown, // Optionen sind die Via-Haltestellen
         '– Keine Via –',
         (selected) => {
             console.log("Via ausgewählt:", selected);
@@ -417,7 +421,8 @@ function generateAnnouncementUrls() {
     if (selectedViaOptions.length > 0) {
         urls.push(GITHUB_BASE + "Fragmente/ueber.mp3");
         selectedViaOptions.forEach((option, index) => {
-            urls.push(GITHUB_BASE + "via/" + encodeURIComponent(option + ".mp3")); // Hinzufügen von .mp3 für Via-Dateien
+            // Hier ist es wichtig, die .mp3-Endung wieder hinzuzufügen, da getSelectedValues() nur den Namen ohne Endung liefert
+            urls.push(GITHUB_BASE + "via/" + encodeURIComponent(option + ".mp3")); 
             if (index < selectedViaOptions.length - 1) {
                 urls.push(GITHUB_BASE + "Fragmente/und.mp3"); // "und" Sprachschnipsel
             }
@@ -598,7 +603,6 @@ function playOnlyLine() {
 
     if (!isValid) {
         showMessageBox(alertMessage);
-        console.warn("'Nur Linie(n)' abgebrochen: Validierungsfehler.");
         return;
     }
 
