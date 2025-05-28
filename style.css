@@ -80,12 +80,12 @@ h1 {
 
 /* Spezialfall für das Label der Gong-Checkbox */
 .form-group input[type="checkbox"] + label {
-     width: auto; /* Auto-Breite */
-     text-align: left; /* Links ausgerichtet */
-     font-weight: normal; /* Normale Dicke */
-     cursor: pointer;
-     flex-grow: 1; /* Nimmt verfügbaren Platz ein */
-     color: var(--text-color); /* Normale Textfarbe */
+    width: auto; /* Auto-Breite */
+    text-align: left; /* Links ausgerichtet */
+    font-weight: normal; /* Normale Dicke */
+    cursor: pointer;
+    flex-grow: 1; /* Nimmt verfügbaren Platz ein */
+    color: var(--text-color); /* Normale Textfarbe */
 }
 
 /* Stil für Input-Felder und Select-Dropdowns */
@@ -158,9 +158,9 @@ h1 {
 /* Spezifischer Fokus-Stil für Text-Inputs und Selects, ergänzt den Rand-Stil */
 .form-group input[type="text"]:focus,
 .form-group select:focus {
-     border-color: var(--primary-color);
-     box-shadow: 0 0 0 0.2rem var(--focus-outline-color);
-     outline: none;
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 0.2rem var(--focus-outline-color);
+    outline: none;
 }
 
 
@@ -172,6 +172,54 @@ h1 {
     opacity: 0.7;
     box-shadow: none;
 }
+
+/* Stil für das benutzerdefinierte Nachrichtenfeld */
+.message-box-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+    display: none; /* Standardmäßig versteckt */
+}
+
+.message-box-content {
+    background-color: var(--surface-color);
+    padding: 25px;
+    border-radius: 8px;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+    text-align: center;
+    max-width: 400px;
+    width: 90%;
+    position: relative;
+}
+
+.message-box-content p {
+    margin-bottom: 20px;
+    font-size: 1.1rem;
+    color: var(--text-color);
+}
+
+.message-box-content button {
+    padding: 10px 20px;
+    background-color: var(--primary-color);
+    color: var(--on-primary-color);
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 1rem;
+    transition: background-color 0.2s ease;
+}
+
+.message-box-content button:hover {
+    background-color: var(--primary-color-dark);
+}
+
 
 @media (max-width: 600px) {
     .form-group {
@@ -188,32 +236,19 @@ h1 {
 
     .form-group input[type="text"],
     .form-group select {
-         min-width: 100%;
+        min-width: 100%;
     }
 
-     .form-group input[type="checkbox"] + label {
-         margin-bottom: 0;
-     }
-
+    .form-group input[type="checkbox"] + label {
+        margin-bottom: 0;
+    }
 
     .button-group {
-        flex-direction: column;
-        align-items: stretch;
-        gap: 10px;
+        flex-direction: column; /* Buttons untereinander auf kleinen Bildschirmen */
+        align-items: stretch; /* Buttons füllen die Breite aus */
     }
 
     .button-group button {
-         width: 100%;
-    }
-
-    .container {
-        padding: 20px;
-        margin-top: 20px;
-        margin-bottom: 20px;
-    }
-
-    h1 {
-        font-size: 1.5rem;
-        margin-bottom: 20px;
+        width: 100%; /* Buttons nehmen volle Breite ein */
     }
 }
