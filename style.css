@@ -88,7 +88,7 @@ h1 {
     color: var(--text-color); /* Normale Textfarbe */
 }
 
-/* Stil für Input-Felder und Select-Dropdowns */
+/* Stil für Input-Felder und Standard-Select-Dropdowns */
 .form-group input[type="text"],
 .form-group select {
     flex-grow: 1; /* Füllt den verfügbaren Platz */
@@ -112,12 +112,14 @@ h1 {
 
 /* Stil für ungültige Eingabe - gilt jetzt für Input[text] UND Select */
 .form-group input[type="text"].is-invalid,
-.form-group select.is-invalid {
+.form-group select.is-invalid,
+.custom-select-container.is-invalid .select-button {
     border-color: var(--error-color); /* Rote Umrandung */
     box-shadow: 0 0 0 0.2rem rgba(220, 53, 69, 0.25); /* Halbtransparenter roter Schatten */
 }
 
-/* Verbesserter Stil für Select-Dropdowns */
+
+/* Verbesserter Stil für Standard-Select-Dropdowns */
 .form-group select {
     padding: 12px 15px; /* Etwas mehr Innenabstand für bessere Klickbarkeit */
     height: auto; /* Automatische Höhe für Mehrfachauswahl */
@@ -133,6 +135,116 @@ h1 {
     padding-right: 35px; /* Platz für den benutzerdefinierten Pfeil */
     cursor: pointer;
 }
+
+/* Stil für benutzerdefinierte Select-Dropdowns (mit Checkboxen) */
+.custom-select-container {
+    position: relative;
+    flex-grow: 1;
+    min-width: 150px;
+    box-sizing: border-box;
+}
+
+.select-button {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+    padding: 12px 15px;
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    background-color: var(--surface-color);
+    color: var(--text-color);
+    font-size: 1rem;
+    cursor: pointer;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+    box-sizing: border-box;
+    text-align: left; /* Text linksbündig */
+}
+
+.select-button:hover {
+    border-color: var(--primary-color);
+}
+
+.select-button.active {
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 0.2rem var(--focus-outline-color);
+}
+
+.select-button .arrow-down {
+    width: 0;
+    height: 0;
+    border-left: 5px solid transparent;
+    border-right: 5px solid transparent;
+    border-top: 5px solid var(--text-color);
+    transition: transform 0.2s ease;
+}
+
+.select-button.active .arrow-down {
+    transform: rotate(180deg);
+}
+
+.select-dropdown {
+    position: absolute;
+    top: 100%; /* Unter dem Button positionieren */
+    left: 0;
+    width: 100%;
+    max-height: 200px; /* Max. Höhe für Scrollbarkeit */
+    overflow-y: auto;
+    background-color: var(--surface-color);
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    z-index: 10; /* Über anderen Elementen anzeigen */
+    display: none; /* Standardmäßig versteckt */
+    padding: 5px 0; /* Innenabstand */
+}
+
+.select-dropdown.show {
+    display: block;
+}
+
+.checkbox-option {
+    display: flex;
+    align-items: center;
+    padding: 8px 15px;
+    cursor: pointer;
+    font-size: 0.95rem;
+    color: var(--text-color);
+}
+
+.checkbox-option:hover {
+    background-color: var(--background-color);
+}
+
+.checkbox-option input[type="checkbox"] {
+    margin-right: 10px;
+    /* Grundlegende Checkbox-Stile */
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+    width: 18px;
+    height: 18px;
+    border: 1px solid var(--border-color);
+    border-radius: 3px;
+    background-color: var(--surface-color);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background-color 0.2s, border-color 0.2s;
+}
+
+.checkbox-option input[type="checkbox"]:checked {
+    background-color: var(--primary-color);
+    border-color: var(--primary-color);
+}
+
+.checkbox-option input[type="checkbox"]:checked::after {
+    content: '✔'; /* Häkchen-Symbol */
+    color: var(--on-primary-color);
+    font-size: 12px;
+}
+
 
 /* Stil für die Button-Gruppe */
 .button-group {
@@ -173,7 +285,8 @@ h1 {
 }
 /* Spezifischer Fokus-Stil für Text-Inputs und Selects, ergänzt den Rand-Stil */
 .form-group input[type="text"]:focus,
-.form-group select:focus {
+.form-group select:focus,
+.custom-select-container .select-button:focus {
     border-color: var(--primary-color);
     box-shadow: 0 0 0 0.2rem var(--focus-outline-color);
     outline: none;
@@ -251,7 +364,8 @@ h1 {
     }
 
     .form-group input[type="text"],
-    .form-group select {
+    .form-group select,
+    .custom-select-container { /* Auch den Container anpassen */
         min-width: 100%;
     }
 
