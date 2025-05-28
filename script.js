@@ -47,30 +47,24 @@ function playNextAudio() {
     if (!url || typeof url !== 'string' || url.trim() === '') {
         console.error(`Ungültige oder leere URL übersprungen bei Index ${currentIndex}:`, url);
         currentIndex++; // Springe zum nächsten Titel
-        playNextAudio(); // Versuche den nächsten Titel
+        playNextNextAudioWithMinimalDelay(); // Versuche den nächsten Titel
         return;
     }
 
     currentAudio = new Audio(url);
-    // Wichtig: Setze die Wiedergabegeschwindigkeit, um Pausen zu minimieren
-    // Standardmäßig ist es 1.0, falls keine spezifische Anpassung notwendig ist,
-    // kann dies beibehalten oder für Experimente verändert werden.
-    currentAudio.playbackRate = 1.0; 
+    currentAudio.playbackRate = 1.0; // Standard-Wiedergabegeschwindigkeit
 
     // Fehlerbehandlung: Wenn ein Titel nicht geladen oder abgespielt werden kann
     currentAudio.onerror = (e) => {
         console.error(`Fehler beim Laden oder Abspielen von ${url}:`, e);
-        // Spezifische Prüfung, ob es die Liniennummer-Datei war
         if (url.includes("/Nummern/line_number_end/")) {
             console.error("Fehler beim Laden der Liniennummer-Audio-Datei. Die eingegebene Nummer ist wahrscheinlich ungültig oder die Datei fehlt auf GitHub.");
         }
         currentIndex++; // Springe zum nächsten Titel
-        playNextAudio(); // Versuche den nächsten Titel
+        playNextNextAudioWithMinimalDelay(); // Versuche den nächsten Titel
     };
 
     // Event-Listener für das Ende des aktuellen Titels
-    // Die Audio-Dateien sollten keine unnötigen Pausen am Ende haben.
-    // Ein `ended`-Event feuert, sobald die Datei wirklich zu Ende ist.
     currentAudio.onended = () => {
         console.log(`Beendet: ${url}`);
         currentIndex++; // Springe zum nächsten Titel
@@ -79,12 +73,9 @@ function playNextAudio() {
 
     // Starten Sie die Wiedergabe. .play() gibt ein Promise zurück, um Autoplay-Probleme zu erkennen.
     currentAudio.play().then(() => {
-        // Wiedergabe erfolgreich gestartet
         console.log(`Wiedergabe gestartet: ${url}`);
     }).catch(error => {
-        // Fehler beim Starten der Wiedergabe (z.B. Browser blockiert Autoplay ohne Benutzerinteraktion)
         console.error(`Fehler beim Starten der Wiedergabe von ${url}:`, error);
-        // Auch hier springen wir zum nächsten Titel, damit die Sequenz weiterläuft.
         currentIndex++;
         playNextNextAudioWithMinimalDelay();
         if (error.name === 'NotAllowedError' || error.name === 'NotSupportedError') {
@@ -94,24 +85,20 @@ function playNextAudio() {
 }
 
 // Hilfsfunktion, um den nächsten Audio-Schnipsel mit minimaler Verzögerung zu starten
-// Dies ist wichtig, um Überschneidungen zu vermeiden, aber gleichzeitig flüssig zu bleiben.
 function playNextNextAudioWithMinimalDelay() {
     // Kurze Timeout, um die Event-Loop nicht zu blockieren und eine minimale Trennung zu gewährleisten.
     // 0ms ist oft ausreichend, um das onended-Event sauber zu verarbeiten und den nächsten play() Aufruf zu initiieren.
-    // Experimentieren Sie hier bei Bedarf mit sehr kleinen Werten (z.B. 10-50ms), falls es immer noch zu Überlappungen oder zu schnellen Übergängen kommt.
+    // Falls es immer noch zu Überlappungen kommt, liegt es wahrscheinlich an den Audio-Dateien selbst (z.B. Stille am Ende).
     setTimeout(() => {
         playNextAudio();
     }, 0); 
 }
 
-
-// Funktion zur Validierung der Liniennummer
-// Prüft, ob eine Datei mit dem Namen "[Nummer].mp3" im geladenen Nummern-Verzeichnis existiert
+// Funktion zur Validierung der Liniennummer (jetzt für Dropdown-Werte)
 function isValidLineNumber(lineNumber) {
     if (!lineNumber || lineNumber.trim() === "") {
         return true; // Leere Eingabe ist "gültig" im Sinne von "keine Linie gewählt"
     }
-    // availableLineNumberFiles enthält die reinen Dateinamen (z.B. ["4", "M1"])
     return availableLineNumberFiles.includes(lineNumber.trim());
 }
 
@@ -127,18 +114,90 @@ function markFieldInvalid(elementId, isInvalid) {
     }
 }
 
+/**
+ * Erstellt und verwaltet ein benutzerdefiniertes Multi-Select-Dropdown mit Checkboxen.
+ * @param {string} containerId Die ID des Containers für das benutzerdefinierte Select (z.B. 'lineSelectContainer').
+ * @param {string} buttonId Die ID des Buttons, der das Dropdown öffnet (z.B. 'lineSelectButton').
+ * @param {string} dropdownId Die ID des Dropdown-Containers (z.B. 'lineSelectDropdown').
+ * @param {string[]} options Die Optionen als Array von Strings (z.B. ['1', '2', 'M3']).
+ * @param {string} defaultText Der Standardtext, wenn nichts ausgewählt ist (z.B. '– Keine Linie wählen –').
+ * @param {function} onSelectionChange Callback-Funktion, die bei jeder Auswahländerung aufgerufen wird.
+ */
+function createMultiSelectDropdown(containerId, buttonId, dropdownId, options, defaultText, onSelectionChange) {
+    const container = document.getElementById(containerId);
+    const button = document.getElementById(buttonId);
+    const dropdown = document.getElementById(dropdownId);
+    const buttonTextSpan = button.querySelector('span:first-child');
+    let selectedValues = [];
+
+    // Dropdown-Inhalt generieren
+    dropdown.innerHTML = ''; // Vorherigen Inhalt leeren
+    options.forEach(optionValue => {
+        const label = document.createElement('label');
+        label.className = 'checkbox-option';
+        const checkbox = document.createElement('input');
+        checkbox.type = 'checkbox';
+        checkbox.value = optionValue;
+        checkbox.addEventListener('change', () => {
+            if (checkbox.checked) {
+                if (!selectedValues.includes(optionValue)) {
+                    selectedValues.push(optionValue);
+                }
+            } else {
+                selectedValues = selectedValues.filter(val => val !== optionValue);
+            }
+            updateButtonText();
+            onSelectionChange(selectedValues); // Callback aufrufen
+        });
+        label.appendChild(checkbox);
+        label.appendChild(document.createTextNode(optionValue));
+        dropdown.appendChild(label);
+    });
+
+    // Text des Buttons aktualisieren
+    function updateButtonText() {
+        if (selectedValues.length === 0) {
+            buttonTextSpan.textContent = defaultText;
+        } else if (selectedValues.length === 1) {
+            buttonTextSpan.textContent = selectedValues[0];
+        } else {
+            buttonTextSpan.textContent = `${selectedValues.length} ausgewählt`;
+        }
+        // Optional: Markierung entfernen, wenn etwas ausgewählt ist
+        markFieldInvalid(containerId, selectedValues.length === 0 && !container.classList.contains('is-invalid'));
+    }
+
+    // Dropdown umschalten
+    button.addEventListener('click', (event) => {
+        event.stopPropagation(); // Verhindert, dass das Klick-Event das Dokument schließt
+        dropdown.classList.toggle('show');
+        button.classList.toggle('active'); // Fügt eine Klasse für den aktiven Zustand hinzu
+    });
+
+    // Dropdown schließen, wenn außerhalb geklickt wird
+    document.addEventListener('click', (event) => {
+        if (!container.contains(event.target)) {
+            dropdown.classList.remove('show');
+            button.classList.remove('active');
+        }
+    });
+
+    // Initialen Text setzen
+    updateButtonText();
+
+    // Funktion zum Abrufen der aktuell ausgewählten Werte
+    container.getSelectedValues = () => selectedValues;
+}
+
+
 // Lädt die Dropdowns für Ziel, Via, Sonderansagen, Gong und Liniennummern
 async function loadDropdowns() {
-    const lineSelect = document.getElementById("lineSelect"); // Neues Linien-Dropdown
     const zielSelect = document.getElementById("zielSelect");
-    const viaSelect = document.getElementById("viaSelect");
     const sonderSelect = document.getElementById("sonderSelect");
     const gongSelect = document.getElementById("gongSelect");
 
-    // Leeren Sie die Dropdowns zuerst (außer den Standard-Optionen)
-    while (lineSelect.options.length > 1) lineSelect.remove(1);
+    // Leeren Sie die Standard-Dropdowns zuerst (außer den Standard-Optionen)
     while (zielSelect.options.length > 1) zielSelect.remove(1);
-    while (viaSelect.options.length > 1) viaSelect.remove(1);
     while (sonderSelect.options.length > 1) sonderSelect.remove(1);
     while (gongSelect.options.length > 1) gongSelect.remove(1);
     availableLineNumberFiles = []; // Liste der Nummern zurücksetzen
@@ -186,20 +245,39 @@ async function loadDropdowns() {
         fetchMp3Filenames("Nummern/line_number_end") // Laden der Liniennummer-Dateien für Validierung
     ]);
 
-    // Befüllen Sie jetzt die Dropdowns mit den geladenen Dateien
-    // Der Option-Value ist der Dateiname (z.B. "Datei.mp3")
-    // Der Option-Text ist der dekodierte Dateiname (z.B. "Datei.mp3", falls keine Umlaute)
+    // Befüllen Sie jetzt die Standard-Dropdowns mit den geladenen Dateien
     zielFiles.forEach(name => zielSelect.add(new Option(decodeURIComponent(name.replace(".mp3", "")), name)));
-    viaFiles.forEach(name => viaSelect.add(new Option(decodeURIComponent(name.replace(".mp3", "")), name)));
     sonderFiles.forEach(name => sonderSelect.add(new Option(decodeURIComponent(name.replace(".mp3", "")), name)));
     gongFiles.forEach(name => gongSelect.add(new Option(decodeURIComponent(name.replace(".mp3", "")), name)));
-
-    // Liniennummern-Dropdown befüllen
-    numberFiles.forEach(name => lineSelect.add(new Option(decodeURIComponent(name.replace(".mp3", "")), name.replace(".mp3", ""))));
 
     // Speichern Sie die Liniennummer-Dateinamen global für die Validierung (ohne .mp3)
     availableLineNumberFiles = numberFiles.map(name => name.replace(".mp3", ""));
     console.log("Verfügbare Liniennummer-Dateien für Validierung:", availableLineNumberFiles);
+
+    // Erstellen der benutzerdefinierten Multi-Select-Dropdowns
+    createMultiSelectDropdown(
+        'lineSelectContainer',
+        'lineSelectButton',
+        'lineSelectDropdown',
+        availableLineNumberFiles, // Optionen sind die verfügbaren Liniennummern
+        '– Keine Linie wählen –',
+        (selected) => {
+            console.log("Linien ausgewählt:", selected);
+            markFieldInvalid('lineSelectContainer', false); // Entfernt Fehler bei Auswahl
+        }
+    );
+
+    createMultiSelectDropdown(
+        'viaSelectContainer',
+        'viaSelectButton',
+        'viaSelectDropdown',
+        viaFiles.map(name => decodeURIComponent(name.replace(".mp3", ""))), // Optionen sind die Via-Haltestellen
+        '– Keine Via –',
+        (selected) => {
+            console.log("Via ausgewählt:", selected);
+            markFieldInvalid('viaSelectContainer', false); // Entfernt Fehler bei Auswahl
+        }
+    );
 
     console.log("Alle Dropdowns und Nummernliste geladen.");
 
@@ -241,27 +319,15 @@ function setupGongCheckboxListener() {
 
 // Funktion, um Event-Listener für alle relevanten Formularfelder einzurichten
 function setupFormFieldListeners() {
-    const lineSelect = document.getElementById("lineSelect"); // Jetzt ein Select
+    // Die benutzerdefinierten Multi-Selects haben ihre eigenen Listener in createMultiSelectDropdown
     const zielSelect = document.getElementById("zielSelect");
-    const viaSelect = document.getElementById("viaSelect");
     const sonderSelect = document.getElementById("sonderSelect");
     const gongSelect = document.getElementById("gongSelect");
-
-    // Für Selects die Markierung bei Änderung oder Fokus entfernen
-    if (lineSelect) {
-        lineSelect.addEventListener('change', () => markFieldInvalid('lineSelect', false));
-        lineSelect.addEventListener('focus', () => markFieldInvalid('lineSelect', false));
-    } else console.error("Linien-Select-Feld nicht gefunden!");
 
     if (zielSelect) {
         zielSelect.addEventListener('change', () => markFieldInvalid('zielSelect', false));
         zielSelect.addEventListener('focus', () => markFieldInvalid('zielSelect', false));
     } else console.error("Ziel-Select nicht gefunden!");
-
-    if (viaSelect) {
-        viaSelect.addEventListener('change', () => markFieldInvalid('viaSelect', false));
-        viaSelect.addEventListener('focus', () => markFieldInvalid('viaSelect', false));
-    } else console.error("Via-Select nicht gefunden!");
 
     if (sonderSelect) {
         sonderSelect.addEventListener('change', () => markFieldInvalid('sonderSelect', false));
@@ -280,18 +346,20 @@ function setupFormFieldListeners() {
  * @returns {string[]} Ein Array von URLs der Audiofragmente.
  */
 function generateAnnouncementUrls() {
-    const lineSelect = document.getElementById("lineSelect");
+    const lineSelectContainer = document.getElementById("lineSelectContainer");
+    const selectedLines = lineSelectContainer.getSelectedValues(); // Aus den benutzerdefinierten Selects
     const ziel = document.getElementById("zielSelect").value;
-    const viaSelect = document.getElementById("viaSelect");
+    const viaSelectContainer = document.getElementById("viaSelectContainer");
+    const selectedViaOptions = viaSelectContainer.getSelectedValues(); // Aus den benutzerdefinierten Selects
     const sonder = document.getElementById("sonderSelect").value;
 
     const includeGong = document.getElementById("includeGongCheckbox").checked;
     const selectedGong = document.getElementById("gongSelect").value;
 
     // Reset aller Fehlermarkierungen zu Beginn
-    markFieldInvalid('lineSelect', false);
+    markFieldInvalid('lineSelectContainer', false);
     markFieldInvalid('zielSelect', false);
-    markFieldInvalid('viaSelect', false);
+    markFieldInvalid('viaSelectContainer', false);
     markFieldInvalid('sonderSelect', false);
     markFieldInvalid('gongSelect', false);
 
@@ -329,14 +397,12 @@ function generateAnnouncementUrls() {
     }
 
     // 1. Liniennummern oder Zug
-    const selectedLines = Array.from(lineSelect.selectedOptions).map(option => option.value).filter(value => value !== "");
     if (selectedLines.length > 0) {
         urls.push(GITHUB_BASE + "Fragmente/linie.mp3");
         selectedLines.forEach((line, index) => {
             urls.push(GITHUB_BASE + "Nummern/line_number_end/" + encodeURIComponent(line) + ".mp3");
             if (index < selectedLines.length - 1) {
-                // Korrektur: "und" Sprachschnipsel liegt unter Fragmente/und.mp3
-                urls.push(GITHUB_BASE + "Fragmente/und.mp3"); 
+                urls.push(GITHUB_BASE + "Fragmente/und.mp3"); // "und" Sprachschnipsel
             }
         });
     } else {
@@ -348,25 +414,18 @@ function generateAnnouncementUrls() {
     urls.push(GITHUB_BASE + "Ziele/" + encodeURIComponent(ziel));
 
     // 3. Via (optional)
-    const selectedViaOptions = Array.from(viaSelect.selectedOptions).filter(option => option.value !== "");
     if (selectedViaOptions.length > 0) {
         urls.push(GITHUB_BASE + "Fragmente/ueber.mp3");
         selectedViaOptions.forEach((option, index) => {
-            urls.push(GITHUB_BASE + "via/" + encodeURIComponent(option.value));
+            urls.push(GITHUB_BASE + "via/" + encodeURIComponent(option + ".mp3")); // Hinzufügen von .mp3 für Via-Dateien
             if (index < selectedViaOptions.length - 1) {
-                // Korrektur: "und" Sprachschnipsel liegt unter Fragmente/und.mp3
-                urls.push(GITHUB_BASE + "Fragmente/und.mp3"); 
+                urls.push(GITHUB_BASE + "Fragmente/und.mp3"); // "und" Sprachschnipsel
             }
         });
     }
 
     // 4. Sonderansage (optional)
     if (sonder && sonder !== "") {
-        // Zwischen Ansage und Sonderansage darf eine Pause bestehen bleiben.
-        // Aktuell wird dies durch das sequentielle Abspielen der Audio-Dateien gehandhabt.
-        // Wenn die Sonderansage nach der Hauptansage kommt, wird sie nach deren Ende abgespielt.
-        // Ein explizites "Pause-Fragment" könnte hier eingefügt werden, falls die Pausenlänge nicht reicht.
-        // Für eine "Reibungslose Wiedergabe" ohne Überschneidungen ist das `onended`-Event entscheidend.
         urls.push(GITHUB_BASE + "Hinweise/" + encodeURIComponent(sonder));
     }
 
@@ -426,21 +485,22 @@ function playOnlySonderansage() {
 
 // Funktion, um nur die Via-Ansage abzuspielen (Gong(optional) -> Linie/Zug -> über -> Via)
 function playOnlyVia() {
-    const lineSelect = document.getElementById("lineSelect");
-    const viaSelect = document.getElementById("viaSelect");
+    const lineSelectContainer = document.getElementById("lineSelectContainer");
+    const selectedLines = lineSelectContainer.getSelectedValues();
+    const viaSelectContainer = document.getElementById("viaSelectContainer");
+    const selectedViaOptions = viaSelectContainer.getSelectedValues();
     const includeGong = document.getElementById("includeGongCheckbox").checked;
     const selectedGong = document.getElementById("gongSelect").value;
 
-    markFieldInvalid('lineSelect', false);
-    markFieldInvalid('viaSelect', false);
+    markFieldInvalid('lineSelectContainer', false);
+    markFieldInvalid('viaSelectContainer', false);
     markFieldInvalid('gongSelect', false);
 
     let isValid = true;
     let alertMessage = "Bitte korrigieren Sie folgende Eingaben:\n";
 
-    const selectedViaOptions = Array.from(viaSelect.selectedOptions).filter(option => option.value !== "");
     if (selectedViaOptions.length === 0) {
-        markFieldInvalid('viaSelect', true);
+        markFieldInvalid('viaSelectContainer', true);
         alertMessage += "- Via Haltestelle(n) muss/müssen ausgewählt werden.\n";
         isValid = false;
     }
@@ -462,7 +522,6 @@ function playOnlyVia() {
         urls.push(GITHUB_BASE + "gong/" + encodeURIComponent(selectedGong));
     }
 
-    const selectedLines = Array.from(lineSelect.selectedOptions).map(option => option.value).filter(value => value !== "");
     if (selectedLines.length > 0) {
         urls.push(GITHUB_BASE + "Fragmente/linie.mp3");
         selectedLines.forEach((line, index) => {
@@ -477,7 +536,7 @@ function playOnlyVia() {
 
     urls.push(GITHUB_BASE + "Fragmente/ueber.mp3");
     selectedViaOptions.forEach((option, index) => {
-        urls.push(GITHUB_BASE + "via/" + encodeURIComponent(option.value));
+        urls.push(GITHUB_BASE + "via/" + encodeURIComponent(option + ".mp3"));
         if (index < selectedViaOptions.length - 1) {
             urls.push(GITHUB_BASE + "Fragmente/und.mp3");
         }
@@ -515,19 +574,19 @@ function playOnlyGong() {
 
 // Funktion, um nur die Liniennummer(n) abzuspielen
 function playOnlyLine() {
-    const lineSelect = document.getElementById("lineSelect");
-    const selectedLines = Array.from(lineSelect.selectedOptions).map(option => option.value).filter(value => value !== "");
+    const lineSelectContainer = document.getElementById("lineSelectContainer");
+    const selectedLines = lineSelectContainer.getSelectedValues();
     const includeGong = document.getElementById("includeGongCheckbox").checked;
     const selectedGong = document.getElementById("gongSelect").value;
 
-    markFieldInvalid('lineSelect', false);
+    markFieldInvalid('lineSelectContainer', false);
     markFieldInvalid('gongSelect', false);
 
     let isValid = true;
     let alertMessage = "Bitte korrigieren Sie folgende Eingaben:\n";
 
     if (selectedLines.length === 0) {
-        markFieldInvalid('lineSelect', true);
+        markFieldInvalid('lineSelectContainer', true);
         alertMessage += "- Liniennummer(n) muss/müssen ausgewählt werden.\n";
         isValid = false;
     }
@@ -783,21 +842,22 @@ function downloadOnlySonderansage() {
 }
 
 function downloadOnlyVia() {
-    const lineSelect = document.getElementById("lineSelect");
-    const viaSelect = document.getElementById("viaSelect");
+    const lineSelectContainer = document.getElementById("lineSelectContainer");
+    const selectedLines = lineSelectContainer.getSelectedValues();
+    const viaSelectContainer = document.getElementById("viaSelectContainer");
+    const selectedViaOptions = viaSelectContainer.getSelectedValues();
     const includeGong = document.getElementById("includeGongCheckbox").checked;
     const selectedGong = document.getElementById("gongSelect").value;
 
-    markFieldInvalid('lineSelect', false);
-    markFieldInvalid('viaSelect', false);
+    markFieldInvalid('lineSelectContainer', false);
+    markFieldInvalid('viaSelectContainer', false);
     markFieldInvalid('gongSelect', false);
 
     let isValid = true;
     let alertMessage = "Bitte korrigieren Sie folgende Eingaben:\n";
 
-    const selectedViaOptions = Array.from(viaSelect.selectedOptions).filter(option => option.value !== "");
     if (selectedViaOptions.length === 0) {
-        markFieldInvalid('viaSelect', true);
+        markFieldInvalid('viaSelectContainer', true);
         alertMessage += "- Via Haltestelle(n) muss/müssen ausgewählt werden.\n";
         isValid = false;
     }
@@ -817,7 +877,6 @@ function downloadOnlyVia() {
         urls.push(GITHUB_BASE + "gong/" + encodeURIComponent(selectedGong));
     }
 
-    const selectedLines = Array.from(lineSelect.selectedOptions).map(option => option.value).filter(value => value !== "");
     if (selectedLines.length > 0) {
         urls.push(GITHUB_BASE + "Fragmente/linie.mp3");
         selectedLines.forEach((line, index) => {
@@ -832,7 +891,7 @@ function downloadOnlyVia() {
 
     urls.push(GITHUB_BASE + "Fragmente/ueber.mp3");
     selectedViaOptions.forEach((option, index) => {
-        urls.push(GITHUB_BASE + "via/" + encodeURIComponent(option.value));
+        urls.push(GITHUB_BASE + "via/" + encodeURIComponent(option + ".mp3"));
         if (index < selectedViaOptions.length - 1) {
             urls.push(GITHUB_BASE + "Fragmente/und.mp3");
         }
@@ -855,19 +914,19 @@ function downloadOnlyGong() {
 }
 
 function downloadOnlyLine() {
-    const lineSelect = document.getElementById("lineSelect");
-    const selectedLines = Array.from(lineSelect.selectedOptions).map(option => option.value).filter(value => value !== "");
+    const lineSelectContainer = document.getElementById("lineSelectContainer");
+    const selectedLines = lineSelectContainer.getSelectedValues();
     const includeGong = document.getElementById("includeGongCheckbox").checked;
     const selectedGong = document.getElementById("gongSelect").value;
 
-    markFieldInvalid('lineSelect', false);
+    markFieldInvalid('lineSelectContainer', false);
     markFieldInvalid('gongSelect', false);
 
     let isValid = true;
     let alertMessage = "Bitte korrigieren Sie folgende Eingaben:\n";
 
     if (selectedLines.length === 0) {
-        markFieldInvalid('lineSelect', true);
+        markFieldInvalid('lineSelectContainer', true);
         alertMessage += "- Liniennummer(n) muss/müssen ausgewählt werden.\n";
         isValid = false;
     }
