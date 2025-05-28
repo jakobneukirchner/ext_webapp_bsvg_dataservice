@@ -109,7 +109,6 @@ function playNextAudio() {
         return; // Funktion beenden, da dieses Fragment übersprungen wurde
     }
 
-    // Ein neues HTMLAudioElement für die aktuelle URL erstellen
     currentAudio = new Audio(url);
     // Die Wiedergabegeschwindigkeit auf Standard (1.0) setzen. Dies ist wichtig, um sicherzustellen,
     // dass die Wiedergabe nicht unerwartet beschleunigt oder verlangsamt wird.
@@ -302,9 +301,10 @@ function createMultiSelectDropdown(containerId, buttonId, dropdownId, options, d
         } else {
             buttonTextSpan.textContent = `${selectedValues.length} ausgewählt`; // Mehrere Auswahl
         }
-        // Optional: Die "is-invalid"-Markierung entfernen, wenn eine Auswahl getroffen wurde
-        // Dies ist wichtig, damit Validierungsfehler verschwinden, sobald der Benutzer eine Aktion vornimmt.
-        markFieldInvalid(containerId, selectedValues.length === 0 && !container.classList.contains('is-invalid'));
+        // *** WICHTIGE ÄNDERUNG HIER: ***
+        // Die automatische Markierung als "is-invalid" beim Laden wird entfernt.
+        // Die Validierung für diese Felder erfolgt nun ausschließlich bei der Generierung der Ansage.
+        // markFieldInvalid(containerId, selectedValues.length === 0 && !container.classList.contains('is-invalid'));
     }
 
     // Event-Listener für den Haupt-Button des Dropdowns (zum Umschalten der Sichtbarkeit)
@@ -316,7 +316,6 @@ function createMultiSelectDropdown(containerId, buttonId, dropdownId, options, d
 
     // Event-Listener auf dem gesamten Dokument, um das Dropdown zu schließen, wenn außerhalb geklickt wird
     document.addEventListener('click', (event) => {
-        // Überprüfen, ob der Klick außerhalb des Dropdown-Containers erfolgte
         if (!container.contains(event.target)) {
             dropdown.classList.remove('show'); // Dropdown verstecken
             button.classList.remove('active'); // Aktiven Zustand des Buttons entfernen
@@ -394,7 +393,7 @@ async function loadDropdowns() {
 
             // Konsolenausgabe basierend auf dem Ergebnis des Ladens
             if (mp3Files.length === 0) {
-                console.warn(`Keine .mp3 Dateien im Ordner ${path} gefunden. Überprüfen Sie den Repository-Pfad und den Inhalt.`);
+                console.warn(`Keine .mp3 Dateien im Ordner ${path} gefunden.`);
             } else {
                 console.log(`Erfolgreich ${mp3Files.length} .mp3 Dateien von ${path} geladen.`);
             }
@@ -639,12 +638,10 @@ function generateAnnouncementUrls() {
 
     // 3. Via (optional): Logik für Via-Haltestellen
     if (selectedViaOptions.length > 0) {
-        // Wenn Via-Haltestellen ausgewählt sind, füge das Fragment "über" hinzu
         urls.push(GITHUB_BASE + "Fragmente/ueber.mp3");
         // Iteriere über alle ausgewählten Via-Haltestellen
         selectedViaOptions.forEach((option, index) => {
-            // Füge die URL für die spezifische Via-Haltestelle hinzu.
-            // Beachte: `option` kommt hier ohne .mp3-Endung, muss also wieder hinzugefügt werden.
+            // Hier ist es wichtig, die .mp3-Endung wieder hinzuzufügen, da getSelectedValues() nur den Namen ohne Endung liefert
             urls.push(GITHUB_BASE + "via/" + encodeURIComponent(option + ".mp3"));
             // Füge "und" nur vor der letzten Via-Haltestelle hinzu, wenn mehr als eine ausgewählt ist
             if (selectedViaOptions.length > 1 && index === selectedViaOptions.length - 2) {
@@ -846,7 +843,6 @@ function playOnlyLine() {
     markFieldInvalid('lineSelectContainer', false);
     markFieldInvalid('gongSelect', false);
 
-    // Eigene Validierung für diese spezifische Wiedergabe
     let isValid = true;
     let alertMessage = "Bitte korrigieren Sie folgende Eingaben:\n";
 
@@ -863,11 +859,9 @@ function playOnlyLine() {
 
     if (!isValid) {
         showMessageBox(alertMessage);
-        console.warn("'Nur Linie(n)' Wiedergabe abgebrochen: Validierungsfehler.");
         return;
     }
 
-    // URLs für die Linienansage-Sequenz generieren
     const urls = [];
     if (includeGong && selectedGong !== "") {
         urls.push(GITHUB_BASE + "gong/" + encodeURIComponent(selectedGong));
@@ -984,7 +978,7 @@ async function downloadAudioSequence(urlsToDownload, filename = 'ansage.wav') {
             audioContext.sampleRate           // Abtastrate
         );
 
-        let offset = 0; // Offset für das Einfügen der einzelnen Buffer in den Ausgabe-Buffer
+        let offset = 0; // Offset für das Einfügen der einzelne Buffer in den Ausgabe-Buffer
         // Jeden dekodierten Audio-Buffer in den Ausgabe-Buffer kopieren
         for (const buffer of audioBuffers) {
             for (let i = 0; i < buffer.numberOfChannels; i++) {
@@ -1273,7 +1267,6 @@ function downloadOnlyLine() {
     markFieldInvalid('lineSelectContainer', false);
     markFieldInvalid('gongSelect', false);
 
-    // Validierung
     let isValid = true;
     let alertMessage = "Bitte korrigieren Sie folgende Eingaben:\n";
 
@@ -1293,7 +1286,6 @@ function downloadOnlyLine() {
         return;
     }
 
-    // URLs für den Download generieren
     const urls = [];
     if (includeGong && selectedGong !== "") {
         urls.push(GITHUB_BASE + "gong/" + encodeURIComponent(selectedGong));
@@ -1302,7 +1294,6 @@ function downloadOnlyLine() {
     urls.push(GITHUB_BASE + "Fragmente/linie.mp3");
     selectedLines.forEach((line, index) => {
         urls.push(GITHUB_BASE + "Nummern/line_number_end/" + encodeURIComponent(line) + ".mp3");
-        // "und" nur vor der letzten Liniennummer
         if (selectedLines.length > 1 && index === selectedLines.length - 2) {
             urls.push(GITHUB_BASE + "Fragmente/und.mp3");
         }
