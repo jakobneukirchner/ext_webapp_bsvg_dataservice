@@ -25,8 +25,10 @@
         </div>
 
         <div class="form-group">
-            <label for="lineInput">Liniennummer(n):</label>
-            <input type="text" id="lineInput" placeholder="Z.B. 1, 2, M3">
+            <label for="lineSelect">Liniennummer(n):</label>
+            <select id="lineSelect" multiple size="5">
+                <option value="">– Keine Linie wählen –</option>
+            </select>
         </div>
 
         <div class="form-group">
@@ -52,10 +54,27 @@
 
         <div class="button-group">
             <button id="playBtn">Ansage abspielen</button>
-            <button id="downloadBtn">Ansage herunterladen</button>
-            <button id="sonderBtn">Nur Sonderansage abspielen</button>
-            <button id="viaBtn">Nur Via abspielen</button>
-            <button id="gongBtn">Nur Gong abspielen</button>
+            <button id="downloadBtn">Gesamte Ansage herunterladen</button>
+        </div>
+
+        <div class="button-group">
+            <button id="sonderPlayBtn">Nur Sonderansage abspielen</button>
+            <button id="sonderDownloadBtn">Nur Sonderansage herunterladen</button>
+        </div>
+
+        <div class="button-group">
+            <button id="viaPlayBtn">Nur Via abspielen</button>
+            <button id="viaDownloadBtn">Nur Via herunterladen</button>
+        </div>
+
+        <div class="button-group">
+            <button id="gongPlayBtn">Nur Gong abspielen</button>
+            <button id="gongDownloadBtn">Nur Gong herunterladen</button>
+        </div>
+
+        <div class="button-group">
+            <button id="linePlayBtn">Nur Linie(n) abspielen</button>
+            <button id="lineDownloadBtn">Nur Linie(n) herunterladen</button>
         </div>
     </div>
     <script src="script.js"></script>
