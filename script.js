@@ -405,8 +405,9 @@ function generateAnnouncementUrls() {
         urls.push(GITHUB_BASE + "Fragmente/linie.mp3");
         selectedLines.forEach((line, index) => {
             urls.push(GITHUB_BASE + "Nummern/line_number_end/" + encodeURIComponent(line) + ".mp3");
-            if (index < selectedLines.length - 1) {
-                urls.push(GITHUB_BASE + "Fragmente/und.mp3"); // "und" Sprachschnipsel
+            // "und" nur vor der letzten Liniennummer
+            if (selectedLines.length > 1 && index === selectedLines.length - 2) {
+                urls.push(GITHUB_BASE + "Fragmente/und.mp3");
             }
         });
     } else {
@@ -423,8 +424,9 @@ function generateAnnouncementUrls() {
         selectedViaOptions.forEach((option, index) => {
             // Hier ist es wichtig, die .mp3-Endung wieder hinzuzufügen, da getSelectedValues() nur den Namen ohne Endung liefert
             urls.push(GITHUB_BASE + "via/" + encodeURIComponent(option + ".mp3")); 
-            if (index < selectedViaOptions.length - 1) {
-                urls.push(GITHUB_BASE + "Fragmente/und.mp3"); // "und" Sprachschnipsel
+            // "und" nur vor der letzten Via-Haltestelle
+            if (selectedViaOptions.length > 1 && index === selectedViaOptions.length - 2) {
+                urls.push(GITHUB_BASE + "Fragmente/und.mp3"); 
             }
         });
     }
@@ -518,7 +520,6 @@ function playOnlyVia() {
 
     if (!isValid) {
         showMessageBox(alertMessage);
-        console.warn("'Nur Via' Ansage abgebrochen: Validierungsfehler.");
         return;
     }
 
@@ -531,7 +532,8 @@ function playOnlyVia() {
         urls.push(GITHUB_BASE + "Fragmente/linie.mp3");
         selectedLines.forEach((line, index) => {
             urls.push(GITHUB_BASE + "Nummern/line_number_end/" + encodeURIComponent(line) + ".mp3");
-            if (index < selectedLines.length - 1) {
+            // "und" nur vor der letzten Liniennummer
+            if (selectedLines.length > 1 && index === selectedLines.length - 2) {
                 urls.push(GITHUB_BASE + "Fragmente/und.mp3");
             }
         });
@@ -542,361 +544,8 @@ function playOnlyVia() {
     urls.push(GITHUB_BASE + "Fragmente/ueber.mp3");
     selectedViaOptions.forEach((option, index) => {
         urls.push(GITHUB_BASE + "via/" + encodeURIComponent(option + ".mp3"));
-        if (index < selectedViaOptions.length - 1) {
-            urls.push(GITHUB_BASE + "Fragmente/und.mp3");
-        }
-    });
-
-    console.log("Konstruierte URLs für 'Nur Via':", urls);
-    startPlayback(urls);
-}
-
-// Funktion, um nur den ausgewählten Gong abzuspielen
-function playOnlyGong() {
-    const selectedGong = document.getElementById("gongSelect").value;
-
-    markFieldInvalid('gongSelect', false);
-
-    let isValid = true;
-    let alertMessage = "Bitte korrigieren Sie folgende Eingaben:\n";
-
-    if (selectedGong === "") {
-        markFieldInvalid('gongSelect', true);
-        alertMessage += "- Gong muss ausgewählt werden, um nur Gong abzuspielen.\n";
-        isValid = false;
-    }
-
-    if (!isValid) {
-        showMessageBox(alertMessage);
-        console.warn("'Nur Gong' abgebrochen: Validierungsfehler.");
-        return;
-    }
-
-    const gongUrl = GITHUB_BASE + "gong/" + encodeURIComponent(selectedGong);
-    console.log("Spiele nur Gong ab:", gongUrl);
-    startPlayback([gongUrl]);
-}
-
-// Funktion, um nur die Liniennummer(n) abzuspielen
-function playOnlyLine() {
-    const lineSelectContainer = document.getElementById("lineSelectContainer");
-    const selectedLines = lineSelectContainer.getSelectedValues();
-    const includeGong = document.getElementById("includeGongCheckbox").checked;
-    const selectedGong = document.getElementById("gongSelect").value;
-
-    markFieldInvalid('lineSelectContainer', false);
-    markFieldInvalid('gongSelect', false);
-
-    let isValid = true;
-    let alertMessage = "Bitte korrigieren Sie folgende Eingaben:\n";
-
-    if (selectedLines.length === 0) {
-        markFieldInvalid('lineSelectContainer', true);
-        alertMessage += "- Liniennummer(n) muss/müssen ausgewählt werden.\n";
-        isValid = false;
-    }
-    if (includeGong && selectedGong === "") {
-        markFieldInvalid('gongSelect', true);
-        alertMessage += "- Gong ist ausgewählt, aber kein Gong gewählt.\n";
-        isValid = false;
-    }
-
-    if (!isValid) {
-        showMessageBox(alertMessage);
-        return;
-    }
-
-    const urls = [];
-    if (includeGong && selectedGong !== "") {
-        urls.push(GITHUB_BASE + "gong/" + encodeURIComponent(selectedGong));
-    }
-
-    urls.push(GITHUB_BASE + "Fragmente/linie.mp3");
-    selectedLines.forEach((line, index) => {
-        urls.push(GITHUB_BASE + "Nummern/line_number_end/" + encodeURIComponent(line) + ".mp3");
-        if (index < selectedLines.length - 1) {
-            urls.push(GITHUB_BASE + "Fragmente/und.mp3");
-        }
-    });
-    console.log("Konstruierte URLs für 'Nur Linie(n)':", urls);
-    startPlayback(urls);
-}
-
-
-/**
- * Zeigt ein benutzerdefiniertes Modal anstelle von alert().
- * @param {string} message Die anzuzeigende Nachricht.
- */
-function showMessageBox(message) {
-    const modalId = 'customMessageBox';
-    let modal = document.getElementById(modalId);
-
-    if (!modal) {
-        modal = document.createElement('div');
-        modal.id = modalId;
-        modal.className = 'message-box-overlay';
-        modal.innerHTML = `
-            <div class="message-box-content">
-                <p id="messageBoxText"></p>
-                <button id="messageBoxCloseBtn">OK</button>
-            </div>
-        `;
-        document.body.appendChild(modal);
-
-        document.getElementById('messageBoxCloseBtn').addEventListener('click', () => {
-            modal.style.display = 'none';
-        });
-    }
-
-    document.getElementById('messageBoxText').innerText = message;
-    modal.style.display = 'flex'; // Zeigt das Modal an
-}
-
-/**
- * Lädt alle Audiofragmente, kombiniert sie und bietet sie als WAV-Datei zum Download an.
- * @param {string[]} urlsToDownload Ein Array von URLs der Audiofragmente, die heruntergeladen werden sollen.
- * @param {string} filename Der Dateiname für den Download.
- */
-async function downloadAudioSequence(urlsToDownload, filename = 'ansage.wav') {
-    if (urlsToDownload.length === 0) {
-        showMessageBox("Es wurden keine Audio-URLs generiert, um sie herunterzuladen.");
-        return;
-    }
-
-    try {
-        showMessageBox("Ansage wird vorbereitet zum Download... Bitte warten.");
-
-        const audioContext = new (window.AudioContext || window.webkitAudioContext)();
-        const audioBuffers = [];
-        let totalLength = 0;
-
-        for (const url of urlsToDownload) {
-            try {
-                const response = await fetch(url);
-                if (!response.ok) {
-                    throw new Error(`HTTP-Fehler beim Laden von ${url}: ${response.statusText}`);
-                }
-                const arrayBuffer = await response.arrayBuffer();
-                const audioBuffer = await audioContext.decodeAudioData(arrayBuffer);
-                audioBuffers.push(audioBuffer);
-                totalLength += audioBuffer.length;
-            } catch (error) {
-                console.error(`Fehler beim Laden/Dekodieren von ${url}:`, error);
-                // Überspringen Sie die fehlerhafte Datei und fahren Sie fort
-            }
-        }
-
-        if (audioBuffers.length === 0) {
-            showMessageBox("Keine gültigen Audio-Dateien zum Kombinieren gefunden.");
-            return;
-        }
-
-        const outputBuffer = audioContext.createBuffer(
-            audioBuffers[0].numberOfChannels,
-            totalLength,
-            audioContext.sampleRate
-        );
-
-        let offset = 0;
-        for (const buffer of audioBuffers) {
-            for (let i = 0; i < buffer.numberOfChannels; i++) {
-                outputBuffer.getChannelData(i).set(buffer.getChannelData(i), offset);
-            }
-            offset += buffer.length;
-        }
-
-        const wavBlob = audioBufferToWav(outputBuffer);
-
-        const url = URL.createObjectURL(wavBlob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = filename;
-        document.body.appendChild(a);
-        a.click();
-        document.body.removeChild(a);
-        URL.revokeObjectURL(url);
-
-        showMessageBox("Ansage erfolgreich heruntergeladen!");
-
-    } catch (error) {
-        console.error("Fehler beim Herunterladen der Ansage:", error);
-        showMessageBox("Fehler beim Herunterladen der Ansage: " + error.message);
-    }
-}
-
-/**
- * Konvertiert einen AudioBuffer in einen WAV-Blob.
- * Quelle: https://github.com/higuma/web-audio-recorder-js/blob/master/lib-min/web-audio-recorder.min.js
- * (Angepasst und vereinfacht für diesen Anwendungsfall)
- * @param {AudioBuffer} buffer Der zu konvertierende AudioBuffer.
- * @returns {Blob} Der WAV-Blob.
- */
-function audioBufferToWav(buffer) {
-    const numOfChan = buffer.numberOfChannels,
-        btwLength = buffer.length * numOfChan * 2 + 44, // 2 bytes per sample, 44 bytes for header
-        buf = new ArrayBuffer(btwLength),
-        view = new DataView(buf),
-        channels = [],
-        sampleRate = buffer.sampleRate;
-
-    let offset = 0;
-    const writeString = (str) => {
-        for (let i = 0; i < str.length; i++) {
-            view.setUint8(offset + i, str.charCodeAt(i));
-        }
-    };
-    const writeUint16 = (val) => {
-        view.setUint16(offset, val, true);
-        offset += 2;
-    };
-    const writeUint32 = (val) => {
-        view.setUint32(offset, val, true);
-        offset += 4;
-    };
-
-    // RIFF identifier
-    writeString('RIFF');
-    offset += 4;
-    // file length
-    writeUint32(btwLength - 8);
-    // RIFF type
-    writeString('WAVE');
-    offset += 4;
-    // format chunk identifier
-    writeString('fmt ');
-    offset += 4;
-    // format chunk length
-    writeUint32(16);
-    // sample format (raw)
-    writeUint16(1);
-    // channel count
-    writeUint16(numOfChan);
-    // sample rate
-    writeUint32(sampleRate);
-    // byte rate (sample rate * block align)
-    writeUint32(sampleRate * numOfChan * 2);
-    // block align (channel count * bytes per sample)
-    writeUint16(numOfChan * 2);
-    // bits per sample
-    writeUint16(16);
-    // data chunk identifier
-    writeString('data');
-    offset += 4;
-    // data chunk length
-    writeUint32(btwLength - offset);
-
-    // Get all channel data
-    for (let i = 0; i < numOfChan; i++) {
-        channels.push(buffer.getChannelData(i));
-    }
-
-    // Interleave and write samples
-    for (let i = 0; i < buffer.length; i++) {
-        for (let j = 0; j < numOfChan; j++) {
-            let sample = Math.max(-1, Math.min(1, channels[j][i]));
-            sample = (sample < 0 ? sample * 0x8000 : sample * 0x7FFF) | 0;
-            view.setInt16(offset, sample, true);
-            offset += 2;
-        }
-    }
-
-    return new Blob([buf], { type: 'audio/wav' });
-}
-
-// --- Download-Funktionen für einzelne Typen ---
-
-function downloadFullAnnouncement() {
-    const urls = generateAnnouncementUrls();
-    downloadAudioSequence(urls, 'vollstaendige_ansage.wav');
-}
-
-function downloadOnlySonderansage() {
-    const sonder = document.getElementById("sonderSelect").value;
-    const includeGong = document.getElementById("includeGongCheckbox").checked;
-    const selectedGong = document.getElementById("gongSelect").value;
-
-    markFieldInvalid('sonderSelect', false);
-    markFieldInvalid('gongSelect', false);
-
-    let isValid = true;
-    let alertMessage = "Bitte korrigieren Sie folgende Eingaben:\n";
-
-    if (sonder === "") {
-        markFieldInvalid('sonderSelect', true);
-        alertMessage += "- Sonderansage muss ausgewählt werden.\n";
-        isValid = false;
-    }
-    if (includeGong && selectedGong === "") {
-        markFieldInvalid('gongSelect', true);
-        alertMessage += "- Gong ist ausgewählt, aber kein Gong gewählt.\n";
-        isValid = false;
-    }
-
-    if (!isValid) {
-        showMessageBox(alertMessage);
-        return;
-    }
-
-    const urls = [];
-    if (includeGong && selectedGong !== "") {
-        urls.push(GITHUB_BASE + "gong/" + encodeURIComponent(selectedGong));
-    }
-    urls.push(GITHUB_BASE + "Hinweise/" + encodeURIComponent(sonder));
-    downloadAudioSequence(urls, 'sonderansage.wav');
-}
-
-function downloadOnlyVia() {
-    const lineSelectContainer = document.getElementById("lineSelectContainer");
-    const selectedLines = lineSelectContainer.getSelectedValues();
-    const viaSelectContainer = document.getElementById("viaSelectContainer");
-    const selectedViaOptions = viaSelectContainer.getSelectedValues();
-    const includeGong = document.getElementById("includeGongCheckbox").checked;
-    const selectedGong = document.getElementById("gongSelect").value;
-
-    markFieldInvalid('lineSelectContainer', false);
-    markFieldInvalid('viaSelectContainer', false);
-    markFieldInvalid('gongSelect', false);
-
-    let isValid = true;
-    let alertMessage = "Bitte korrigieren Sie folgende Eingaben:\n";
-
-    if (selectedViaOptions.length === 0) {
-        markFieldInvalid('viaSelectContainer', true);
-        alertMessage += "- Via Haltestelle(n) muss/müssen ausgewählt werden.\n";
-        isValid = false;
-    }
-    if (includeGong && selectedGong === "") {
-        markFieldInvalid('gongSelect', true);
-        alertMessage += "- Gong ist ausgewählt, aber kein Gong gewählt.\n";
-        isValid = false;
-    }
-
-    if (!isValid) {
-        showMessageBox(alertMessage);
-        return;
-    }
-
-    const urls = [];
-    if (includeGong && selectedGong !== "") {
-        urls.push(GITHUB_BASE + "gong/" + encodeURIComponent(selectedGong));
-    }
-
-    if (selectedLines.length > 0) {
-        urls.push(GITHUB_BASE + "Fragmente/linie.mp3");
-        selectedLines.forEach((line, index) => {
-            urls.push(GITHUB_BASE + "Nummern/line_number_end/" + encodeURIComponent(line) + ".mp3");
-            if (index < selectedLines.length - 1) {
-                urls.push(GITHUB_BASE + "Fragmente/und.mp3");
-            }
-        });
-    } else {
-        urls.push(GITHUB_BASE + "Fragmente/zug.mp3");
-    }
-
-    urls.push(GITHUB_BASE + "Fragmente/ueber.mp3");
-    selectedViaOptions.forEach((option, index) => {
-        urls.push(GITHUB_BASE + "via/" + encodeURIComponent(option + ".mp3"));
-        if (index < selectedViaOptions.length - 1) {
+        // "und" nur vor der letzten Via-Haltestelle
+        if (selectedViaOptions.length > 1 && index === selectedViaOptions.length - 2) {
             urls.push(GITHUB_BASE + "Fragmente/und.mp3");
         }
     });
@@ -953,7 +602,8 @@ function downloadOnlyLine() {
     urls.push(GITHUB_BASE + "Fragmente/linie.mp3");
     selectedLines.forEach((line, index) => {
         urls.push(GITHUB_BASE + "Nummern/line_number_end/" + encodeURIComponent(line) + ".mp3");
-        if (index < selectedLines.length - 1) {
+        // "und" nur vor der letzten Liniennummer
+        if (selectedLines.length > 1 && index === selectedLines.length - 2) {
             urls.push(GITHUB_BASE + "Fragmente/und.mp3");
         }
     });
