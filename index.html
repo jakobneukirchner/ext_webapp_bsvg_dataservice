@@ -7,24 +7,26 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@400;500;600;700&display=swap" rel="stylesheet">
-
-    <link rel="stylesheet" href="style.css"> </head>
+    <link rel="stylesheet" href="style.css">
+</head>
 <body>
-    <div class="container"> <h1>Ansagen-Generator</h1>
+    <div class="container">
+        <h1>Ansagen-Generator</h1>
 
         <div class="form-group">
             <input type="checkbox" id="includeGongCheckbox">
             <label for="includeGongCheckbox">Gong vor der Ansage abspielen</label>
         </div>
-        <div id="gongSelectContainer" class="form-group" style="display: none;"> <label for="gongSelect">Gong wählen:</label>
+        <div id="gongSelectContainer" class="form-group" style="display: none;">
+            <label for="gongSelect">Gong wählen:</label>
             <select id="gongSelect">
                 <option value="">– Keinen Gong wählen –</option>
             </select>
         </div>
 
         <div class="form-group">
-            <label for="lineInput">Liniennummer:</label>
-            <input type="text" id="lineInput" placeholder="Liniennummer eingeben">
+            <label for="lineInput">Liniennummer(n):</label>
+            <input type="text" id="lineInput" placeholder="Z.B. 1, 2, M3">
         </div>
 
         <div class="form-group">
@@ -35,8 +37,8 @@
         </div>
 
         <div class="form-group">
-            <label for="viaSelect">Via Haltestelle:</label>
-            <select id="viaSelect">
+            <label for="viaSelect">Via Haltestelle(n):</label>
+            <select id="viaSelect" multiple size="5">
                 <option value="">– Keine Via –</option>
             </select>
         </div>
@@ -48,10 +50,15 @@
             </select>
         </div>
 
-        <div class="button-group"> <button id="playBtn">Ansage abspielen</button>
+        <div class="button-group">
+            <button id="playBtn">Ansage abspielen</button>
+            <button id="downloadBtn">Ansage herunterladen</button>
             <button id="sonderBtn">Nur Sonderansage abspielen</button>
             <button id="viaBtn">Nur Via abspielen</button>
-            <button id="gongBtn">Nur Gong abspielen</button> </div>
-    </div> <script src="script.js"></script> </body>
+            <button id="gongBtn">Nur Gong abspielen</button>
+        </div>
+    </div>
+    <script src="script.js"></script>
     <script data-name="BMC-Widget" data-cfasync="false" src="https://cdnjs.buymeacoffee.com/1.0.0/widget.prod.min.js" data-id="koblin12" data-description="Support me on Buy me a coffee!" data-message="" data-color="#5F7FFF" data-position="Right" data-x_margin="18" data-y_margin="18"></script>
+</body>
 </html>
