@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+
 <html lang="de">
 <head>
     <meta charset="UTF-8">
@@ -13,79 +13,103 @@
     <div id="container" class="container">
         <h1>Ansagen-Generator</h1>
 
-        <div class="form-group">
-            <input type="checkbox" id="includeGongCheckbox">
-            <label for="includeGongCheckbox">Gong vor der Ansage abspielen</label>
-        </div>
-        <div id="gongSelectContainer" class="form-group" style="display: none;">
-            <label for="gongSelect">Gong wählen:</label>
-            <select id="gongSelect">
-                <option value="">– Keinen Gong wählen –</option>
-            </select>
-        </div>
+        <section class="card main-announcement-section">
+            <h2>Hauptansage erstellen</h2>
 
-        <div class="form-group">
-            <label>Liniennummer(n):</label>
-            <div id="lineSelectContainer" class="custom-select-container">
-                <button type="button" class="select-button" id="lineSelectButton">
-                    <span>– Keine Linie wählen –</span>
-                    <span class="arrow-down"></span>
-                </button>
-                <div class="select-dropdown" id="lineSelectDropdown">
-                    </div>
+            <div class="form-group">
+                <input type="checkbox" id="includeGongCheckbox">
+                <label for="includeGongCheckbox">Gong vor der Ansage abspielen</label>
             </div>
-        </div>
-
-        <div class="form-group">
-            <label for="zielSelect">Fahrziel:</label>
-            <select id="zielSelect">
-                <option value="">– Bitte wählen –</option>
-            </select>
-        </div>
-
-        <div class="form-group">
-            <label>Via Haltestelle(n):</label>
-            <div id="viaSelectContainer" class="custom-select-container">
-                <button type="button" class="select-button" id="viaSelectButton">
-                    <span>– Keine Via –</span>
-                    <span class="arrow-down"></span>
-                </button>
-                <div class="select-dropdown" id="viaSelectDropdown">
-                    </div>
+            <div id="gongSelectContainer" class="form-group" style="display: none;">
+                <label for="gongSelect">Gong wählen:</label>
+                <select id="gongSelect">
+                    <option value="">– Keinen Gong wählen –</option>
+                </select>
             </div>
-        </div>
 
-        <div class="form-group">
-            <label for="sonderSelect">Sonderansage:</label>
-            <select id="sonderSelect">
-                <option value="">– Keine Sonderansage –</option>
-            </select>
-        </div>
+            <div class="form-group">
+                <label>Liniennummer(n):</label>
+                <div id="lineSelectContainer" class="custom-select-container">
+                    <button type="button" class="select-button" id="lineSelectButton">
+                        <span>– Keine Linie wählen –</span>
+                        <span class="arrow-down"></span>
+                    </button>
+                    <div class="select-dropdown" id="lineSelectDropdown">
+                        </div>
+                </div>
+            </div>
 
-        <div class="button-group">
-            <button id="playBtn">Ansage abspielen</button>
-            <button id="downloadBtn">Gesamte Ansage herunterladen</button>
-        </div>
+            <div class="form-group">
+                <label for="zielSelect">Fahrziel:</label>
+                <select id="zielSelect">
+                    <option value="">– Bitte wählen –</option>
+                </select>
+            </div>
 
-        <div class="button-group">
-            <button id="sonderPlayBtn">Nur Sonderansage abspielen</button>
-            <button id="sonderDownloadBtn">Nur Sonderansage herunterladen</button>
-        </div>
+            <div class="form-group">
+                <label>Via Haltestelle(n):</label>
+                <div id="viaSelectContainer" class="custom-select-container">
+                    <button type="button" class="select-button" id="viaSelectButton">
+                        <span>– Keine Via –</span>
+                        <span class="arrow-down"></span>
+                    </button>
+                    <div class="select-dropdown" id="viaSelectDropdown">
+                        </div>
+                </div>
+            </div>
 
-        <div class="button-group">
-            <button id="viaPlayBtn">Nur Via abspielen</button>
-            <button id="viaDownloadBtn">Nur Via herunterladen</button>
-        </div>
+            <div class="form-group">
+                <label for="sonderSelect">Sonderansage:</label>
+                <select id="sonderSelect">
+                    <option value="">– Keine Sonderansage –</option>
+                </select>
+            </div>
 
-        <div class="button-group">
-            <button id="gongPlayBtn">Nur Gong abspielen</button>
-            <button id="gongDownloadBtn">Nur Gong herunterladen</button>
-        </div>
+            <div class="button-group main-buttons">
+                <button id="playBtn">Ansage abspielen</button>
+                <button id="downloadBtn">Gesamte Ansage herunterladen</button>
+            </div>
+        </section>
 
-        <div class="button-group">
-            <button id="linePlayBtn">Nur Linie(n) abspielen</button>
-            <button id="lineDownloadBtn">Nur Linie(n) herunterladen</button>
-        </div>
+        <details class="collapsible-section">
+            <summary>
+                <h3>Spezifische Ansagen & Downloads</h3>
+                <span class="arrow-icon"></span>
+            </summary>
+            <div class="section-content">
+                <section class="card sub-section">
+                    <h3>Nur Sonderansage</h3>
+                    <div class="button-group">
+                        <button id="sonderPlayBtn">Abspielen</button>
+                        <button id="sonderDownloadBtn">Herunterladen</button>
+                    </div>
+                </section>
+
+                <section class="card sub-section">
+                    <h3>Nur Via</h3>
+                    <div class="button-group">
+                        <button id="viaPlayBtn">Abspielen</button>
+                        <button id="viaDownloadBtn">Herunterladen</button>
+                    </div>
+                </section>
+
+                <section class="card sub-section">
+                    <h3>Nur Gong</h3>
+                    <div class="button-group">
+                        <button id="gongPlayBtn">Abspielen</button>
+                        <button id="gongDownloadBtn">Herunterladen</button>
+                    </div>
+                </section>
+
+                <section class="card sub-section">
+                    <h3>Nur Linie(n)</h3>
+                    <div class="button-group">
+                        <button id="linePlayBtn">Abspielen</button>
+                        <button id="lineDownloadBtn">Herunterladen</button>
+                    </div>
+                </section>
+            </div>
+        </details>
     </div>
     <script src="script.js"></script>
     <script data-name="BMC-Widget" data-cfasync="false" src="https://cdnjs.buymeacoffee.com/1.0.0/widget.prod.min.js" data-id="koblin12" data-description="Support me on Buy me a coffee!" data-message="" data-color="#5F7FFF" data-position="Right" data-x_margin="18" data-y_margin="18"></script>
