@@ -917,6 +917,7 @@ function showMessageBox(message, showSpinner = false) {
     const modalId = 'customMessageBox';
     let modal = document.getElementById(modalId);
     let spinner = document.getElementById('loadingSpinner'); // Referenz zum Spinner-Element
+    let closeBtn = document.getElementById('messageBoxCloseBtn'); // Referenz zum OK-Button
 
     // Wenn das Modal noch nicht existiert, erstellen Sie es und fügen Sie es dem DOM hinzu
     if (!modal) {
@@ -933,16 +934,26 @@ function showMessageBox(message, showSpinner = false) {
         `;
         document.body.appendChild(modal);
 
-        // Nach dem Hinzufügen zum DOM die Referenz zum Spinner aktualisieren
+        // Nach dem Hinzufügen zum DOM die Referenzen aktualisieren
         spinner = document.getElementById('loadingSpinner');
+        closeBtn = document.getElementById('messageBoxCloseBtn');
+    }
 
-        // Event-Listener für den Schliessen-Button des Modals
-        document.getElementById('messageBoxCloseBtn').addEventListener('click', () => {
+    // Event-Listener für den Schliessen-Button des Modals HIER ANHÄNGEN/AKTUALISIEREN
+    // Dies stellt sicher, dass der Listener immer aktiv ist, auch wenn das Modal wiederverwendet wird.
+    if (closeBtn) { // Sicherstellen, dass der Button existiert
+        // Entferne alte Listener, um Duplikate zu vermeiden
+        const oldCloseBtn = closeBtn.cloneNode(true);
+        closeBtn.parentNode.replaceChild(oldCloseBtn, closeBtn);
+        closeBtn = oldCloseBtn; // Referenz auf den neuen Button aktualisieren
+
+        closeBtn.addEventListener('click', () => {
             modal.style.display = 'none'; // Modal verstecken
             // Sicherstellen, dass der Spinner auch versteckt wird, wenn das Modal manuell geschlossen wird
             if (spinner) spinner.style.display = 'none';
         });
     }
+
 
     // Den Nachrichtentext im Modal aktualisieren
     document.getElementById('messageBoxText').innerText = message;
@@ -953,7 +964,6 @@ function showMessageBox(message, showSpinner = false) {
     }
 
     // Den OK-Button verstecken, wenn ein Spinner angezeigt wird (da der Vorgang noch läuft)
-    const closeBtn = document.getElementById('messageBoxCloseBtn');
     if (closeBtn) {
         closeBtn.style.display = showSpinner ? 'none' : 'block';
     }
