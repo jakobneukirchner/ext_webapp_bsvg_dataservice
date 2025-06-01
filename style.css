@@ -44,9 +44,14 @@ body {
     box-sizing: border-box;
     margin-top: 40px; /* Abstand oben */
     margin-bottom: 40px; /* Abstand unten */
+
+    /* Flexbox für die Anordnung der Sektionen */
+    display: flex;
+    flex-direction: column;
+    gap: 25px; /* Abstand zwischen den Sektionen */
 }
 
-/* Stil für die Überschrift */
+/* Stil für Überschriften */
 h1 {
     text-align: center;
     color: var(--primary-color);
@@ -55,6 +60,22 @@ h1 {
     font-size: 2rem; /* Grössere Überschrift */
     font-weight: 600; /* Mittlere Dicke bei Kanit */
     letter-spacing: 0.05em; /* Leichter Zeichenabstand */
+}
+
+/* Stil für allgemeine Karten/Sektionen */
+.card {
+    background-color: var(--surface-color);
+    padding: 25px;
+    border-radius: 8px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05); /* Leichterer Schatten für Sektionen */
+    text-align: left; /* Textausrichtung in den Sektionen */
+}
+
+.card h2, .card h3 {
+    text-align: center; /* Überschriften in Sektionen zentrieren */
+    color: var(--primary-color);
+    margin-top: 0;
+    margin-bottom: 20px;
 }
 
 /* Stil für einzelne Formularzeilen */
@@ -248,11 +269,17 @@ h1 {
 
 /* Stil für die Button-Gruppe */
 .button-group {
-    margin-top: 20px; /* Etwas weniger Abstand zwischen den Gruppen */
+    margin-top: 20px; /* Abstand nach oben */
     display: flex;
     justify-content: flex-end; /* Buttons rechts ausrichten */
     gap: 15px; /* Abstand zwischen Buttons */
     flex-wrap: wrap;
+}
+
+/* Zentrierung für Haupt-Buttons */
+.button-group.main-buttons {
+    justify-content: center;
+    margin-top: 30px; /* Mehr Abstand für die Haupt-Buttons */
 }
 
 /* Stil für die Buttons */
@@ -349,7 +376,73 @@ h1 {
     background-color: var(--primary-color-dark);
 }
 
+/* Stil für aufklappbare Sektionen (details/summary) */
+.collapsible-section {
+    background-color: var(--surface-color);
+    border-radius: 8px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+    overflow: hidden; /* Wichtig, um den Inhalt beim Einklappen zu verstecken */
+}
 
+.collapsible-section summary {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 15px 25px;
+    cursor: pointer;
+    background-color: var(--primary-color); /* Hintergrundfarbe für den Zusammenfassungstitel */
+    color: var(--on-primary-color); /* Textfarbe */
+    font-weight: 600;
+    font-size: 1.1rem;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.2); /* Leichte Trennlinie */
+    transition: background-color 0.2s ease;
+}
+
+.collapsible-section summary:hover {
+    background-color: var(--primary-color-dark); /* Dunkler bei Hover */
+}
+
+.collapsible-section summary h3 {
+    margin: 0; /* Standard-Margin entfernen */
+    color: inherit; /* Farbe vom Parent (summary) erben */
+    text-align: left;
+}
+
+/* Pfeil-Icon für aufklappbare Sektion */
+.collapsible-section .arrow-icon {
+    display: inline-block;
+    width: 0;
+    height: 0;
+    border-left: 6px solid transparent;
+    border-right: 6px solid transparent;
+    border-top: 6px solid var(--on-primary-color); /* Pfeilfarbe an Textfarbe anpassen */
+    transition: transform 0.2s ease; /* Sanfte Drehung beim Öffnen/Schließen */
+}
+
+/* Pfeil drehen, wenn die Sektion geöffnet ist */
+.collapsible-section[open] > summary .arrow-icon {
+    transform: rotate(180deg);
+}
+
+/* Inhalt der aufklappbaren Sektion */
+.collapsible-section .section-content {
+    padding: 20px 25px;
+    display: flex;
+    flex-direction: column;
+    gap: 20px; /* Abstand zwischen den inneren Karten */
+}
+
+/* Anpassungen für kleinere Sektionen innerhalb des aufklappbaren Bereichs */
+.collapsible-section .card.sub-section {
+    padding: 15px; /* Etwas weniger Padding für Unter-Sektionen */
+}
+
+.collapsible-section .card.sub-section h3 {
+    font-size: 1.2rem; /* Kleinere Überschrift für Unter-Sektionen */
+    margin-bottom: 15px;
+}
+
+/* Responsive Anpassungen */
 @media (max-width: 600px) {
     .form-group {
         flex-direction: column;
@@ -380,5 +473,11 @@ h1 {
 
     .button-group button {
         width: 100%; /* Buttons nehmen volle Breite ein */
+    }
+
+    /* Anpassung für Labels in Unter-Sektionen auf kleinen Bildschirmen */
+    .collapsible-section .card .form-group label {
+        width: auto; /* Auf Auto setzen, damit es sich anpasst */
+        text-align: left;
     }
 }
