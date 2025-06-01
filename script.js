@@ -83,10 +83,11 @@ function stopPlayback() {
  */
 async function preloadAudioUrls(urls) {
     initializeAudioContext(); // Sicherstellen, dass der AudioContext initialisiert ist
-    // Den vorherigen Cache leeren, um nur die aktuellen Dateien vorzuladen
-    preloadedAudioBuffers.clear();
+    preloadedAudioBuffers.clear(); // Den vorherigen Cache leeren
 
-    // Ein Array von Promises erstellen, die jeweils das Laden und Dekodieren einer Audio-Datei repräsentieren
+    // Zeige den Ladebalken an
+    showMessageBox("Audio wird vorgeladen... Bitte warten.", true);
+
     const fetchAndDecodePromises = urls.map(async url => {
         // Ungültige oder leere URLs überspringen
         if (!url || typeof url !== 'string' || url.trim() === '') {
@@ -118,13 +119,23 @@ async function preloadAudioUrls(urls) {
     // Warten, bis alle Promises abgeschlossen sind, und fehlgeschlagene Ergebnisse filtern
     const results = await Promise.all(fetchAndDecodePromises);
     // Den `preloadedAudioBuffers`-Map mit den erfolgreich geladenen Buffern aktualisieren
+    // Filtert alle `null`-Werte heraus, die von fehlgeschlagenen Downloads stammen könnten.
     preloadedAudioBuffers = new Map(
         results.filter(buffer => buffer !== null).map(buffer => {
             // Finde die ursprüngliche URL für den erfolgreich geladenen Buffer
+            // Dies ist notwendig, da `results` nur die Buffer enthält, nicht die URLs.
             const url = urls.find(u => preloadedAudioBuffers.get(u) === buffer);
             return [url, buffer];
         })
     );
+
+    // Verstecke den Ladebalken, aber zeige eine kurze Erfolgsmeldung, die sich selbst schließt
+    showMessageBox(`Vorladen abgeschlossen. ${preloadedAudioBuffers.size} Dateien erfolgreich geladen.`, false);
+    setTimeout(() => {
+        const msgBox = document.getElementById('customMessageBox');
+        if (msgBox) msgBox.style.display = 'none';
+    }, 1500); // Meldung nach 1.5 Sekunden ausblenden
+
     console.log(`Vorladen abgeschlossen. ${preloadedAudioBuffers.size} Dateien erfolgreich geladen.`);
 }
 
@@ -140,6 +151,7 @@ async function playSeamlessSequence(urls) {
     initializeAudioContext(); // Sicherstellen, dass der AudioContext bereit ist
 
     // Alle benötigten Audio-Dateien vorladen, bevor die Wiedergabe beginnt
+    // Der Ladebalken wird bereits von preloadAudioUrls gesteuert.
     await preloadAudioUrls(urls);
 
     activeSources = []; // Liste der aktiven Quellen für die neue Sequenz leeren
@@ -899,32 +911,53 @@ function playOnlyLine() {
  * Zeigt ein benutzerdefiniertes Modal (Nachrichtenbox) anstelle des nativen `alert()`.
  * Dies bietet eine konsistentere und anpassbarere Benutzeroberfläche.
  * @param {string} message - Die Nachricht, die im Modal angezeigt werden soll.
+ * @param {boolean} showSpinner - Ob ein Lade-Spinner angezeigt werden soll (Standard: false).
  */
-function showMessageBox(message) {
+function showMessageBox(message, showSpinner = false) {
     const modalId = 'customMessageBox';
     let modal = document.getElementById(modalId);
+    let spinner = document.getElementById('loadingSpinner'); // Referenz zum Spinner-Element
 
     // Wenn das Modal noch nicht existiert, erstellen Sie es und fügen Sie es dem DOM hinzu
     if (!modal) {
         modal = document.createElement('div');
         modal.id = modalId;
         modal.className = 'message-box-overlay'; // CSS-Klasse für das Overlay
+        // Der HTML-Inhalt des Modals, inklusive des Spinners
         modal.innerHTML = `
             <div class="message-box-content">
                 <p id="messageBoxText"></p>
+                <div id="loadingSpinner" class="spinner" style="display: none;"></div>
                 <button id="messageBoxCloseBtn">OK</button>
             </div>
         `;
         document.body.appendChild(modal);
 
+        // Nach dem Hinzufügen zum DOM die Referenz zum Spinner aktualisieren
+        spinner = document.getElementById('loadingSpinner');
+
         // Event-Listener für den Schliessen-Button des Modals
         document.getElementById('messageBoxCloseBtn').addEventListener('click', () => {
             modal.style.display = 'none'; // Modal verstecken
+            // Sicherstellen, dass der Spinner auch versteckt wird, wenn das Modal manuell geschlossen wird
+            if (spinner) spinner.style.display = 'none';
         });
     }
 
     // Den Nachrichtentext im Modal aktualisieren
     document.getElementById('messageBoxText').innerText = message;
+
+    // Spinner-Sichtbarkeit steuern
+    if (spinner) {
+        spinner.style.display = showSpinner ? 'block' : 'none';
+    }
+
+    // Den OK-Button verstecken, wenn ein Spinner angezeigt wird (da der Vorgang noch läuft)
+    const closeBtn = document.getElementById('messageBoxCloseBtn');
+    if (closeBtn) {
+        closeBtn.style.display = showSpinner ? 'none' : 'block';
+    }
+
     // Das Modal anzeigen (Flexbox für Zentrierung)
     modal.style.display = 'flex';
 }
@@ -949,8 +982,8 @@ async function downloadAudioSequence(urlsToDownload, filename = 'ansage.wav') {
     }
 
     try {
-        // Nachricht anzeigen, dass der Download vorbereitet wird
-        showMessageBox("Ansage wird vorbereitet zum Download... Dies kann einen Moment dauern. Bitte warten.");
+        // Nachricht anzeigen, dass der Download vorbereitet wird, mit Spinner
+        showMessageBox("Ansage wird vorbereitet zum Download... Dies kann einen Moment dauern. Bitte warten.", true);
 
         initializeAudioContext(); // Sicherstellen, dass der AudioContext initialisiert ist
 
@@ -1019,11 +1052,16 @@ async function downloadAudioSequence(urlsToDownload, filename = 'ansage.wav') {
         document.body.removeChild(a); // Das temporäre Element wieder entfernen
         URL.revokeObjectURL(url); // Den temporären URL freigeben, um Speicher zu sparen
 
-        showMessageBox("Ansage erfolgreich heruntergeladen!"); // Erfolgsmeldung anzeigen
+        // Erfolgsmeldung anzeigen und Spinner verstecken
+        showMessageBox("Ansage erfolgreich heruntergeladen!", false);
+        setTimeout(() => {
+            const msgBox = document.getElementById('customMessageBox');
+            if (msgBox) msgBox.style.display = 'none';
+        }, 1500); // Meldung nach 1.5 Sekunden ausblenden
 
     } catch (error) {
         console.error("Fehler beim Herunterladen der Ansage:", error);
-        showMessageBox("Fehler beim Herunterladen der Ansage: " + error.message + ". Bitte versuchen Sie es erneut.");
+        showMessageBox("Fehler beim Herunterladen der Ansage: " + error.message + ". Bitte versuchen Sie es erneut.", false);
     }
 }
 
@@ -1348,6 +1386,6 @@ document.getElementById("lineDownloadBtn").addEventListener("click", downloadOnl
 document.addEventListener("DOMContentLoaded", () => {
     // Initialisiert den AudioContext beim Laden des DOMs.
     // Dies ist eine gängige Praxis, um die Web Audio API vorzubereiten.
-    initializeAudioContext(); 
+    initializeAudioContext();
     loadDropdowns();
 });
