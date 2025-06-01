@@ -1179,7 +1179,7 @@ function audioBufferToWav(buffer) {
 function downloadFullAnnouncement() {
     const urls = generateAnnouncementUrls(); // URLs generieren
     // Den Download-Vorgang starten
-    downloadAudioSequence(urls, 'vollstaendige_ansage.wav');
+    downloadAudioSequence(urls, 'ansage_v');
 }
 
 /**
