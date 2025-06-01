@@ -209,19 +209,20 @@ h1 {
     top: 100%; /* Unter dem Button positionieren */
     left: 0;
     width: 100%;
-    max-height: 200px; /* Max. Höhe für Scrollbarkeit */
-    overflow-y: auto;
+    max-height: 0; /* Startwert für die Animation */
+    overflow: hidden; /* Inhalt verstecken, wenn eingeklappt */
     background-color: var(--surface-color);
     border: 1px solid var(--border-color);
     border-radius: 4px;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
     z-index: 10; /* Über anderen Elementen anzeigen */
-    display: none; /* Standardmäßig versteckt */
-    padding: 5px 0; /* Innenabstand */
+    padding: 0 0; /* Initial kein Padding */
+    transition: max-height 0.3s ease-out, padding 0.3s ease-out; /* Animation für max-height und padding */
 }
 
 .select-dropdown.show {
-    display: block;
+    max-height: 200px; /* Max. Höhe für Scrollbarkeit */
+    padding: 5px 0; /* Innenabstand beim Ausklappen */
 }
 
 .checkbox-option {
@@ -381,7 +382,7 @@ h1 {
     background-color: var(--surface-color);
     border-radius: 8px;
     box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
-    overflow: hidden; /* Wichtig, um den Inhalt beim Einklappen zu verstecken */
+    /* overflow: hidden; wird hier entfernt, da es die Animation des Inhalts stört */
 }
 
 .collapsible-section summary {
@@ -424,13 +425,15 @@ h1 {
     transform: rotate(180deg);
 }
 
-/* Inhalt der aufklappbaren Sektion */
+/* Inhalt der aufklappbaren Sektion - KEINE ANIMATION HIER */
 .collapsible-section .section-content {
     padding: 20px 25px;
     display: flex;
     flex-direction: column;
     gap: 20px; /* Abstand zwischen den inneren Karten */
+    /* Keine max-height oder padding transition hier, um sofortiges Erscheinen zu gewährleisten */
 }
+
 
 /* Anpassungen für kleinere Sektionen innerhalb des aufklappbaren Bereichs */
 .collapsible-section .card.sub-section {
