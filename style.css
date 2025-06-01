@@ -383,6 +383,7 @@ h1 {
     background-color: var(--surface-color);
     border-radius: 8px;
     box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+    /* overflow: hidden; wird auf den section-content angewendet */
 }
 
 .collapsible-section summary {
@@ -425,13 +426,17 @@ h1 {
     transform: rotate(180deg);
 }
 
-/* Inhalt der aufklappbaren Sektion - KEINE ANIMATION HIER */
+/* Inhalt der aufklappbaren Sektion mit Animation */
 .collapsible-section .section-content {
-    padding: 20px 25px;
-    display: flex;
-    flex-direction: column;
-    gap: 20px; /* Abstand zwischen den inneren Karten */
-    /* Keine max-height oder padding transition hier, um sofortiges Erscheinen zu gewährleisten */
+    max-height: 0; /* Startwert für die Animation */
+    overflow: hidden; /* Inhalt verstecken, wenn eingeklappt */
+    padding: 0 25px; /* Initial kein vertikales Padding */
+    transition: max-height 0.4s ease-out, padding 0.4s ease-out; /* Animation für max-height und padding */
+}
+
+.collapsible-section[open] .section-content {
+    max-height: 500px; /* Genug Höhe, um den Inhalt anzuzeigen (Anpassung bei mehr Inhalt) */
+    padding: 20px 25px; /* Padding beim Ausklappen */
 }
 
 
