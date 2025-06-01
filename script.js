@@ -10,22 +10,23 @@ const GITHUB_BASE = "https://raw.githubusercontent.com/jakobneukirchner/ext_weba
 // =================================================================================================
 
 /**
- * @type {HTMLAudioElement|null} currentAudio - Speichert das aktuell aktive HTMLAudioElement.
- * Wird auf null gesetzt, wenn keine Wiedergabe stattfindet oder die Wiedergabe gestoppt wird.
+ * @type {AudioContext|null} audioContext - Die zentrale Instanz der Web Audio API.
+ * Wird verwendet, um Audio zu dekodieren, zu verarbeiten und abzuspielen.
  */
-let currentAudio = null;
+let audioContext = null;
 
 /**
- * @type {string[]} audioUrls - Ein Array von URLs der Audio-Fragmente, die in der aktuellen Sequenz abgespielt werden sollen.
- * Jede URL repräsentiert einen einzelnen Audioclip, der nacheinander abgespielt wird.
+ * @type {Map<string, AudioBuffer>} preloadedAudioBuffers - Ein Map-Objekt, das AudioBuffers speichert.
+ * Schlüssel ist die URL des Audio-Fragments, Wert ist der dekodierte AudioBuffer.
+ * Dient als Cache für die flüssige Wiedergabe.
  */
-let audioUrls = [];
+let preloadedAudioBuffers = new Map();
 
 /**
- * @type {number} currentIndex - Der Index des Audio-Fragments im `audioUrls`-Array, das gerade abgespielt wird
- * oder als Nächstes abgespielt werden soll. Dient zur Steuerung des Fortschritts der Wiedergabesequenz.
+ * @type {AudioBufferSourceNode[]} activeSources - Ein Array, das alle aktuell aktiven AudioBufferSourceNodes speichert.
+ * Dies ist wichtig, um die Wiedergabe bei Bedarf stoppen zu können.
  */
-let currentIndex = 0;
+let activeSources = [];
 
 /**
  * @type {string[]} availableLineNumberFiles - Eine globale Liste der verfügbaren Liniennummern (ohne .mp3-Endung).
@@ -36,142 +37,153 @@ let availableLineNumberFiles = [];
 
 
 // =================================================================================================
-// FUNKTIONEN ZUR STEUERUNG DER AUDIO-WIEDERGABE
+// FUNKTIONEN ZUR STEUERUNG DER AUDIO-WIEDERGABE (WEB AUDIO API)
 // Diese Funktionen verwalten das Starten, Stoppen und den Fortschritt der Ansagen.
 // =================================================================================================
 
 /**
+ * Initialisiert den Web Audio API Context.
+ * Dies sollte so früh wie möglich geschehen, idealerweise nach einer ersten Benutzerinteraktion,
+ * um Autoplay-Richtlinien der Browser zu erfüllen.
+ */
+function initializeAudioContext() {
+    if (!audioContext) {
+        // Erstellt einen neuen AudioContext, der für die Audio-Verarbeitung benötigt wird.
+        audioContext = new (window.AudioContext || window.webkitAudioContext)();
+        console.log("Web Audio Context initialisiert.");
+    }
+}
+
+/**
  * Stoppt die aktuell laufende Audiowiedergabe sofort.
- * Setzt alle relevanten globalen Variablen zurück, um einen sauberen Zustand für eine neue Wiedergabe zu gewährleisten.
+ * Beendet alle aktiven AudioBufferSourceNodes und leert die Liste der aktiven Quellen.
  */
 function stopPlayback() {
-    // Überprüfen, ob ein Audio-Element aktiv ist
-    if (currentAudio) {
-        // Die Wiedergabe des aktuellen Audio-Elements pausieren
-        currentAudio.pause();
-        // Das Audio-Element freigeben, um Speicherlecks zu vermeiden und den Zustand zu bereinigen
-        currentAudio = null;
+    if (audioContext && activeSources.length > 0) {
+        activeSources.forEach(source => {
+            try {
+                // Versucht, die Audioquelle zu stoppen. Ein Fehler kann auftreten,
+                // wenn die Quelle bereits beendet oder gestoppt wurde.
+                source.stop();
+            } catch (e) {
+                console.warn("Fehler beim Stoppen der Audioquelle (möglicherweise bereits beendet):", e);
+            }
+        });
+        // Die Liste der aktiven Quellen leeren
+        activeSources = [];
     }
-    // Die Liste der abzuspielenden URLs leeren
-    audioUrls = [];
-    // Den Index für die nächste Wiedergabe auf den Anfang zurücksetzen
-    currentIndex = 0;
-    // Konsolenausgabe zur Bestätigung des Stoppvorgangs
     console.log("Wiedergabe gestoppt.");
 }
 
 /**
- * Startet eine neue Sequenz von Audio-Wiedergaben basierend auf einem Array von URLs.
- * Ruft zuerst `stopPlayback()` auf, um sicherzustellen, dass keine vorherige Wiedergabe stört.
- * @param {string[]} urls - Ein Array von Strings, wobei jeder String eine URL zu einem Audio-Fragment ist.
+ * Lädt alle Audio-Dateien von den gegebenen URLs in AudioBuffers vor.
+ * Diese werden im `preloadedAudioBuffers`-Map gespeichert, um eine schnelle und flüssige Wiedergabe zu ermöglichen.
+ * @param {string[]} urls - Ein Array von URLs zu den Audio-Dateien, die vorgeladen werden sollen.
+ * @returns {Promise<void>} Ein Promise, das aufgelöst wird, wenn alle Audio-Dateien erfolgreich vorgeladen wurden.
  */
-function startPlayback(urls) {
-    // Zuerst jegliche laufende Wiedergabe stoppen, um Überschneidungen zu vermeiden
-    stopPlayback();
+async function preloadAudioUrls(urls) {
+    initializeAudioContext(); // Sicherstellen, dass der AudioContext initialisiert ist
+    // Den vorherigen Cache leeren, um nur die aktuellen Dateien vorzuladen
+    preloadedAudioBuffers.clear();
 
-    // Überprüfen, ob gültige URLs zum Abspielen übergeben wurden
-    if (!urls || urls.length === 0) {
-        console.warn("Keine URLs zum Abspielen übergeben. Wiedergabe kann nicht gestartet werden.");
-        return; // Funktion beenden, wenn keine URLs vorhanden sind
-    }
-
-    // Die übergebenen URLs als neue Wiedergabeliste festlegen
-    audioUrls = urls;
-    // Den Wiedergabe-Index auf den Anfang der neuen Liste setzen
-    currentIndex = 0;
-    // Die Wiedergabe des ersten Audio-Fragments starten
-    playNextAudio();
-}
-
-/**
- * Spielt das nächste Audio-Fragment in der `audioUrls`-Sequenz ab.
- * Diese Funktion wird rekursiv aufgerufen, bis alle Fragmente abgespielt wurden.
- * Beinhaltet Fehlerbehandlung für das Laden und Abspielen von Audio.
- */
-function playNextAudio() {
-    // Überprüfen, ob alle Audio-Fragmente in der Sequenz abgespielt wurden
-    if (currentIndex >= audioUrls.length) {
-        console.log("Audiosequenz vollständig beendet. Alle Fragmente wurden abgespielt.");
-        currentAudio = null; // Das letzte Audio-Element freigeben
-        return; // Funktion beenden, da die Sequenz abgeschlossen ist
-    }
-
-    // Die URL des aktuell an der Reihe befindlichen Audio-Fragments abrufen
-    const url = audioUrls[currentIndex];
-    // Debugging-Ausgabe: Zeigt an, welches Fragment gerade versucht wird abzuspielen
-    console.log(`Versuche abzuspielen [${currentIndex + 1}/${audioUrls.length}]: ${url}`);
-
-    // Zusätzliche Validierung der URL, um leere oder ungültige URLs zu überspringen
-    if (!url || typeof url !== 'string' || url.trim() === '') {
-        console.error(`Ungültige oder leere URL übersprungen bei Index ${currentIndex}: ${url}. Fahre mit dem nächsten Fragment fort.`);
-        currentIndex++; // Zum nächsten Fragment springen
-        playNextNextAudioWithMinimalDelay(); // Versuchen, das nächste Fragment abzuspielen
-        return; // Funktion beenden, da dieses Fragment übersprungen wurde
-    }
-
-    currentAudio = new Audio(url);
-    // Die Wiedergabegeschwindigkeit auf Standard (1.0) setzen. Dies ist wichtig, um sicherzustellen,
-    // dass die Wiedergabe nicht unerwartet beschleunigt oder verlangsamt wird.
-    currentAudio.playbackRate = 1.0;
-
-    /**
-     * Event-Handler für Fehler, die beim Laden oder Abspielen eines Audio-Fragments auftreten.
-     * @param {Event} e - Das Fehlerereignis.
-     */
-    currentAudio.onerror = (e) => {
-        console.error(`Fehler beim Laden oder Abspielen von ${url}:`, e);
-        // Spezifische Fehlermeldung, wenn eine Liniennummer-Datei nicht gefunden wurde
-        if (url.includes("/Nummern/line_number_end/")) {
-            console.error("Fehler beim Laden der Liniennummer-Audio-Datei. Die eingegebene Nummer ist wahrscheinlich ungültig oder die Datei fehlt auf GitHub.");
+    // Ein Array von Promises erstellen, die jeweils das Laden und Dekodieren einer Audio-Datei repräsentieren
+    const fetchAndDecodePromises = urls.map(async url => {
+        // Ungültige oder leere URLs überspringen
+        if (!url || typeof url !== 'string' || url.trim() === '') {
+            console.warn(`Ungültige URL beim Vorladen übersprungen: ${url}`);
+            return null; // Null zurückgeben, um anzuzeigen, dass dieser Eintrag übersprungen wurde
         }
-        // Zum nächsten Fragment springen, um die Wiedergabesequenz nicht zu unterbrechen
-        currentIndex++;
-        playNextNextAudioWithMinimalDelay();
-    };
-
-    /**
-     * Event-Handler, der ausgelöst wird, wenn die Wiedergabe des aktuellen Audio-Fragments beendet ist.
-     * Dies ist entscheidend für die sequentielle Wiedergabe ohne Überschneidungen.
-     */
-    currentAudio.onended = () => {
-        console.log(`Beendet: ${url}`); // Debugging-Ausgabe
-        currentIndex++; // Den Index für das nächste Fragment erhöhen
-        // Das nächste Audio-Fragment mit einer minimalen Verzögerung abspielen
-        playNextNextAudioWithMinimalDelay();
-    };
-
-    // Versuchen, die Wiedergabe des Audio-Fragments zu starten.
-    // `play()` gibt ein Promise zurück, das zur Handhabung von Autoplay-Richtlinien nützlich ist.
-    currentAudio.play().then(() => {
-        // Wiedergabe erfolgreich gestartet
-        console.log(`Wiedergabe gestartet: ${url}`);
-    }).catch(error => {
-        // Fehler beim Starten der Wiedergabe (z.B. Browser blockiert Autoplay ohne Benutzerinteraktion)
-        console.error(`Fehler beim Starten der Wiedergabe von ${url}:`, error);
-        // Auch hier springen wir zum nächsten Titel, damit die Sequenz weiterläuft.
-        currentIndex++;
-        playNextNextAudioWithMinimalDelay();
-        // Spezifische Warnung für Autoplay-Fehler
-        if (error.name === 'NotAllowedError' || error.name === 'NotSupportedError') {
-            console.warn("Wiedergabe wurde möglicherweise vom Browser blockiert. Eine Benutzerinteraktion (z.B. Klick auf einen Play-Button) ist oft erforderlich, um Audio abzuspielen.");
+        // Wenn die Datei bereits im Cache ist, den vorhandenen Buffer zurückgeben
+        if (preloadedAudioBuffers.has(url)) {
+            return preloadedAudioBuffers.get(url);
+        }
+        try {
+            // Audio-Datei abrufen
+            const response = await fetch(url);
+            if (!response.ok) {
+                throw new Error(`HTTP-Fehler! Status: ${response.status} für ${url}`);
+            }
+            const arrayBuffer = await response.arrayBuffer(); // Rohdaten als ArrayBuffer
+            // Audio-Daten dekodieren
+            const audioBuffer = await audioContext.decodeAudioData(arrayBuffer);
+            // Den dekodierten Buffer im Cache speichern
+            preloadedAudioBuffers.set(url, audioBuffer);
+            return audioBuffer;
+        } catch (error) {
+            console.error(`Fehler beim Vorladen von Audio von ${url}:`, error);
+            return null; // Null zurückgeben bei Fehler
         }
     });
+
+    // Warten, bis alle Promises abgeschlossen sind, und fehlgeschlagene Ergebnisse filtern
+    const results = await Promise.all(fetchAndDecodePromises);
+    // Den `preloadedAudioBuffers`-Map mit den erfolgreich geladenen Buffern aktualisieren
+    preloadedAudioBuffers = new Map(
+        results.filter(buffer => buffer !== null).map(buffer => {
+            // Finde die ursprüngliche URL für den erfolgreich geladenen Buffer
+            const url = urls.find(u => preloadedAudioBuffers.get(u) === buffer);
+            return [url, buffer];
+        })
+    );
+    console.log(`Vorladen abgeschlossen. ${preloadedAudioBuffers.size} Dateien erfolgreich geladen.`);
 }
 
+
 /**
- * Eine Hilfsfunktion, die das Abspielen des nächsten Audio-Fragments mit einer kleinen,
- * aber wichtigen Verzögerung plant. Dies hilft, Überschneidungen zu vermeiden und
- * eine sauberere Trennung zwischen den Fragmenten zu gewährleisten.
- * Die Verzögerung ermöglicht es dem Browser, das 'onended'-Event vollständig zu verarbeiten.
+ * Spielt eine Sequenz von Audio-Buffern nahtlos hintereinander ab, indem die Web Audio API verwendet wird.
+ * Diese Funktion sorgt für eine flüssige Wiedergabe ohne hörbare Lücken oder Überschneidungen.
+ * @param {string[]} urls - Ein Array von URLs, die die Reihenfolge der abzuspielenden Audio-Fragmente darstellen.
  */
-function playNextNextAudioWithMinimalDelay() {
-    // Eine kurze Verzögerung von 50 Millisekunden. Dieser Wert kann bei Bedarf angepasst werden.
-    // Eine zu geringe Verzögerung könnte zu Überschneidungen führen, eine zu hohe zu unnatürlichen Pausen.
-    const delay = 50; // Millisekunden
-    // Setzen eines Timers, der `playNextAudio()` nach der angegebenen Verzögerung aufruft.
-    setTimeout(() => {
-        playNextAudio();
-    }, delay);
+async function playSeamlessSequence(urls) {
+    stopPlayback(); // Zuerst jegliche laufende Wiedergabe stoppen
+
+    initializeAudioContext(); // Sicherstellen, dass der AudioContext bereit ist
+
+    // Alle benötigten Audio-Dateien vorladen, bevor die Wiedergabe beginnt
+    await preloadAudioUrls(urls);
+
+    activeSources = []; // Liste der aktiven Quellen für die neue Sequenz leeren
+    let currentTime = audioContext.currentTime; // Startzeit für das erste Audio-Fragment
+
+    // Iteriere durch die URLs, um die Audio-Buffer abzuspielen
+    for (let i = 0; i < urls.length; i++) {
+        const url = urls[i];
+        const audioBuffer = preloadedAudioBuffers.get(url);
+
+        if (!audioBuffer) {
+            console.warn(`Überspringe fehlenden oder fehlerhaften Audio-Buffer für URL: ${url}`);
+            continue; // Dieses Fragment überspringen und mit dem nächsten fortfahren
+        }
+
+        // Einen neuen AudioBufferSourceNode erstellen
+        const source = audioContext.createBufferSource();
+        source.buffer = audioBuffer; // Den vorgeladenen AudioBuffer zuweisen
+
+        // Den Source Node direkt an das AudioContext-Ziel (Lautsprecher) anschliessen.
+        // Die Web Audio API handhabt Mono-zu-Stereo-Konvertierung automatisch,
+        // wenn ein Mono-Source an ein Stereo-Destination angeschlossen wird.
+        source.connect(audioContext.destination);
+
+        // Wiedergabe des Audio-Fragments zu einem präzisen Zeitpunkt planen
+        source.start(currentTime);
+        activeSources.push(source); // Die Quelle verfolgen, um sie später stoppen zu können
+
+        // Die Startzeit für das nächste Audio-Fragment aktualisieren
+        currentTime += audioBuffer.duration;
+
+        // Wenn dies das letzte Audio-Fragment in der Sequenz ist, einen Event-Listener für das Ende hinzufügen
+        if (i === urls.length - 1) {
+            source.onended = () => {
+                console.log("Nahtlose Audiosequenz vollständig beendet.");
+                activeSources = []; // Alle aktiven Quellen löschen, da die Sequenz beendet ist
+            };
+        }
+    }
+
+    // Wenn nach dem Durchlauf keine Quellen geplant wurden (z.B. alle URLs waren ungültig)
+    if (activeSources.length === 0) {
+        console.warn("Es wurden keine Audioquellen für die Wiedergabe geplant.");
+    }
 }
 
 
@@ -301,10 +313,9 @@ function createMultiSelectDropdown(containerId, buttonId, dropdownId, options, d
         } else {
             buttonTextSpan.textContent = `${selectedValues.length} ausgewählt`; // Mehrere Auswahl
         }
-        // *** WICHTIGE ÄNDERUNG HIER: ***
-        // Die automatische Markierung als "is-invalid" beim Laden wird entfernt.
-        // Die Validierung für diese Felder erfolgt nun ausschließlich bei der Generierung der Ansage.
-        // markFieldInvalid(containerId, selectedValues.length === 0 && !container.classList.contains('is-invalid'));
+        // Die "is-invalid"-Markierung wird hier NICHT gesetzt, um zu verhindern,
+        // dass Felder beim Laden der Seite bereits als falsch markiert sind.
+        // Die Validierung erfolgt erst beim Versuch, eine Ansage zu generieren.
     }
 
     // Event-Listener für den Haupt-Button des Dropdowns (zum Umschalten der Sichtbarkeit)
@@ -675,7 +686,7 @@ function playAnnouncement() {
     // Überprüfen, ob URLs generiert wurden (d.h., keine Validierungsfehler)
     if (urls.length > 0) {
         console.log("Konstruierte URLs für die vollständige Ansage zur Wiedergabe:", urls);
-        startPlayback(urls); // Die Wiedergabe starten
+        playSeamlessSequence(urls); // Die Wiedergabe über die Web Audio API starten
     } else {
         console.warn("Keine URLs zum Abspielen konstruiert. Überprüfen Sie die Formulareingaben und Validierung.");
     }
@@ -725,7 +736,7 @@ function playOnlySonderansage() {
     urls.push(GITHUB_BASE + "Hinweise/" + encodeURIComponent(sonder));
 
     console.log("Konstruierte URLs für 'Nur Sonderansage' zur Wiedergabe:", urls);
-    startPlayback(urls); // Wiedergabe starten
+    playSeamlessSequence(urls); // Wiedergabe starten
 }
 
 /**
@@ -796,7 +807,7 @@ function playOnlyVia() {
     });
 
     console.log("Konstruierte URLs für 'Nur Via' zur Wiedergabe:", urls);
-    startPlayback(urls); // Wiedergabe starten
+    playSeamlessSequence(urls); // Wiedergabe starten
 }
 
 /**
@@ -825,7 +836,7 @@ function playOnlyGong() {
 
     const gongUrl = GITHUB_BASE + "gong/" + encodeURIComponent(selectedGong);
     console.log("Spiele nur Gong ab:", gongUrl);
-    startPlayback([gongUrl]); // Nur den Gong abspielen
+    playSeamlessSequence([gongUrl]); // Nur den Gong abspielen
 }
 
 /**
@@ -875,7 +886,7 @@ function playOnlyLine() {
         }
     });
     console.log("Konstruierte URLs für 'Nur Linie(n)' zur Wiedergabe:", urls);
-    startPlayback(urls); // Wiedergabe starten
+    playSeamlessSequence(urls); // Wiedergabe starten
 }
 
 
@@ -941,8 +952,8 @@ async function downloadAudioSequence(urlsToDownload, filename = 'ansage.wav') {
         // Nachricht anzeigen, dass der Download vorbereitet wird
         showMessageBox("Ansage wird vorbereitet zum Download... Dies kann einen Moment dauern. Bitte warten.");
 
-        // Eine neue AudioContext-Instanz erstellen
-        const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+        initializeAudioContext(); // Sicherstellen, dass der AudioContext initialisiert ist
+
         const audioBuffers = []; // Array zum Speichern der dekodierten AudioBuffer
         let totalLength = 0; // Gesamtlänge aller Audio-Buffer in Samples
 
@@ -971,9 +982,9 @@ async function downloadAudioSequence(urlsToDownload, filename = 'ansage.wav') {
         }
 
         // Einen neuen AudioBuffer für die kombinierte Ausgabe erstellen
-        // Die Kanalanzahl und Sample-Rate werden vom ersten geladenen Buffer übernommen.
+        // WICHTIG: Erzeuge immer einen Stereo-Buffer (2 Kanäle) für den Download
         const outputBuffer = audioContext.createBuffer(
-            audioBuffers[0].numberOfChannels, // Anzahl der Audiokanäle (z.B. 1 für Mono, 2 für Stereo)
+            2, // Erzwinge 2 Kanäle für Stereo-Ausgabe
             totalLength,                      // Gesamtlänge in Samples
             audioContext.sampleRate           // Abtastrate
         );
@@ -981,9 +992,16 @@ async function downloadAudioSequence(urlsToDownload, filename = 'ansage.wav') {
         let offset = 0; // Offset für das Einfügen der einzelne Buffer in den Ausgabe-Buffer
         // Jeden dekodierten Audio-Buffer in den Ausgabe-Buffer kopieren
         for (const buffer of audioBuffers) {
+            // Kopiere Daten von jedem Kanal des Quell-Buffers in die entsprechenden Kanäle des Ziel-Buffers
             for (let i = 0; i < buffer.numberOfChannels; i++) {
-                // Die Kanal-Daten des aktuellen Buffers an der richtigen Position in den Ausgabe-Buffer kopieren
-                outputBuffer.getChannelData(i).set(buffer.getChannelData(i), offset);
+                // Wenn der Quell-Buffer mono ist (1 Kanal), kopiere ihn auf beide Kanäle des Ziel-Buffers
+                if (buffer.numberOfChannels === 1) {
+                    outputBuffer.getChannelData(0).set(buffer.getChannelData(0), offset); // Linker Kanal
+                    outputBuffer.getChannelData(1).set(buffer.getChannelData(0), offset); // Rechter Kanal (Duplikat)
+                } else {
+                    // Wenn der Quell-Buffer Stereo ist, kopiere die Kanäle direkt
+                    outputBuffer.getChannelData(i).set(buffer.getChannelData(i), offset);
+                }
             }
             offset += buffer.length; // Offset für das nächste Fragment aktualisieren
         }
@@ -1011,49 +1029,39 @@ async function downloadAudioSequence(urlsToDownload, filename = 'ansage.wav') {
 
 /**
  * Konvertiert einen Web Audio API AudioBuffer in einen WAV-Blob.
- * Dies ist eine angepasste und vereinfachte Version einer bekannten Implementierung.
+ * Diese Funktion wurde angepasst, um immer eine Stereo-WAV-Datei zu erzeugen,
+ * selbst wenn der Eingangs-AudioBuffer mono ist.
  * @param {AudioBuffer} buffer - Der zu konvertierende AudioBuffer.
  * @returns {Blob} Der resultierende WAV-Blob.
  */
 function audioBufferToWav(buffer) {
-    // Anzahl der Audiokanäle (Mono oder Stereo)
-    const numOfChan = buffer.numberOfChannels;
-    // Gesamtlänge des WAV-Dateipuffers in Bytes (inklusive 44 Bytes für den WAV-Header)
-    const btwLength = buffer.length * numOfChan * 2 + 44; // 2 Bytes pro Sample (16-bit PCM)
-    // Ein neuer ArrayBuffer, der die Rohdaten der WAV-Datei enthalten wird
-    const buf = new ArrayBuffer(btwLength);
-    // Ein DataView, um Daten in spezifischen Byte-Formaten in den ArrayBuffer zu schreiben
-    const view = new DataView(buf);
-    // Array zum Speichern der Kanal-Daten (Float32Array)
-    const channels = [];
-    // Abtastrate des AudioBuffers
+    const desiredNumChannels = 2; // Wir wollen immer Stereo-Ausgabe
+    const inputNumChannels = buffer.numberOfChannels; // Kanäle des Quell-Buffers
     const sampleRate = buffer.sampleRate;
+    const bitsPerSample = 16; // Feste Bit-Tiefe für PCM
 
-    let offset = 0; // Aktueller Schreib-Offset im ArrayBuffer
+    // Berechne die Gesamtlänge des WAV-Dateipuffers basierend auf der gewünschten Stereo-Ausgabe
+    const totalSamples = buffer.length; // Länge pro Kanal (in Samples)
+    const btwLength = totalSamples * desiredNumChannels * (bitsPerSample / 8) + 44; // 44 Bytes für den WAV-Header
 
-    /**
-     * Hilfsfunktion zum Schreiben eines Strings in den DataView.
-     * @param {string} str - Der zu schreibende String.
-     */
+    const buf = new ArrayBuffer(btwLength);
+    const view = new DataView(buf);
+    let offset = 0;
+
+    /** Hilfsfunktion zum Schreiben eines Strings in den DataView. */
     const writeString = (str) => {
         for (let i = 0; i < str.length; i++) {
             view.setUint8(offset + i, str.charCodeAt(i));
         }
     };
 
-    /**
-     * Hilfsfunktion zum Schreiben eines 16-Bit Unsigned Integer in den DataView.
-     * @param {number} val - Der zu schreibende Wert.
-     */
+    /** Hilfsfunktion zum Schreiben eines 16-Bit Unsigned Integer in den DataView. */
     const writeUint16 = (val) => {
         view.setUint16(offset, val, true); // true für Little-Endian
         offset += 2;
     };
 
-    /**
-     * Hilfsfunktion zum Schreiben eines 32-Bit Unsigned Integer in den DataView.
-     * @param {number} val - Der zu schreibende Wert.
-     */
+    /** Hilfsfunktion zum Schreiben eines 32-Bit Unsigned Integer in den DataView. */
     const writeUint32 = (val) => {
         view.setUint32(offset, val, true); // true für Little-Endian
         offset += 4;
@@ -1062,40 +1070,44 @@ function audioBufferToWav(buffer) {
     // --- WAV-Header schreiben ---
 
     // RIFF-Chunk
-    writeString('RIFF'); // Chunk ID (4 Bytes)
-    offset += 4; // Offset für ChunkSize
-    writeUint32(btwLength - 8); // ChunkSize (Dateilänge - 8 Bytes für "RIFF" und "ChunkSize" selbst)
-    writeString('WAVE'); // Format (4 Bytes)
-    offset += 4; // Offset für Subchunk1ID
+    writeString('RIFF'); offset += 4;
+    writeUint32(btwLength - 8); // ChunkSize
+    writeString('WAVE'); offset += 4;
 
     // fmt-Subchunk (Format-Chunk)
-    writeString('fmt '); // Subchunk1ID (4 Bytes)
-    offset += 4; // Offset für Subchunk1Size
+    writeString('fmt '); offset += 4;
     writeUint32(16); // Subchunk1Size (16 für PCM)
     writeUint16(1); // AudioFormat (1 für PCM)
-    writeUint16(numOfChan); // NumChannels (Anzahl der Kanäle)
-    writeUint32(sampleRate); // SampleRate (Abtastrate)
-    writeUint32(sampleRate * numOfChan * 2); // ByteRate (SampleRate * NumChannels * BitsPerSample/8)
-    writeUint16(numOfChan * 2); // BlockAlign (NumChannels * BitsPerSample/8)
-    writeUint16(16); // BitsPerSample (16 Bits)
+    writeUint16(desiredNumChannels); // NumChannels (ERZWINGE STEREO)
+    writeUint32(sampleRate); // SampleRate
+    writeUint32(sampleRate * desiredNumChannels * (bitsPerSample / 8)); // ByteRate
+    writeUint16(desiredNumChannels * (bitsPerSample / 8)); // BlockAlign
+    writeUint16(bitsPerSample); // BitsPerSample
 
     // data-Subchunk (Daten-Chunk)
-    writeString('data'); // Subchunk2ID (4 Bytes)
-    offset += 4; // Offset für Subchunk2Size
-    writeUint32(btwLength - offset); // Subchunk2Size (Anzahl der Datenbytes)
+    writeString('data'); offset += 4;
+    writeUint32(totalSamples * desiredNumChannels * (bitsPerSample / 8)); // Data chunk length
 
-    // --- Audiodaten schreiben ---
-
-    // Alle Kanal-Daten aus dem AudioBuffer abrufen
-    for (let i = 0; i < numOfChan; i++) {
-        channels.push(buffer.getChannelData(i));
+    // Kanal-Daten aus dem Quell-Buffer abrufen
+    const inputChannels = [];
+    for (let i = 0; i < inputNumChannels; i++) {
+        inputChannels.push(buffer.getChannelData(i));
     }
 
     // Samples interleaven (für Stereo: LRLR...) und als 16-Bit PCM schreiben
-    for (let i = 0; i < buffer.length; i++) {
-        for (let j = 0; j < numOfChan; j++) {
+    for (let i = 0; i < totalSamples; i++) {
+        for (let j = 0; j < desiredNumChannels; j++) {
+            let sample;
+            if (inputNumChannels === 1) {
+                // Wenn der Quell-Buffer mono ist, verwende den einzigen Kanal für beide Stereo-Kanäle
+                sample = inputChannels[0][i];
+            } else {
+                // Wenn der Quell-Buffer bereits Stereo oder mehr ist, verwende den entsprechenden Kanal
+                sample = inputChannels[j % inputNumChannels][i]; // Sicherstellen, dass der Index gültig ist
+            }
+
             // Sample-Wert normalisieren (-1.0 bis 1.0) und in 16-Bit Integer konvertieren
-            let sample = Math.max(-1, Math.min(1, channels[j][i]));
+            sample = Math.max(-1, Math.min(1, sample)); // Auf den Bereich [-1, 1] begrenzen
             sample = (sample < 0 ? sample * 0x8000 : sample * 0x7FFF) | 0; // Konvertierung zu 16-bit Integer
             view.setInt16(offset, sample, true); // Sample in den Buffer schreiben (Little-Endian)
             offset += 2; // Offset um 2 Bytes erhöhen (da 16-bit Sample)
@@ -1334,5 +1346,8 @@ document.getElementById("lineDownloadBtn").addEventListener("click", downloadOnl
  * Startet den Ladevorgang für die Dropdown-Optionen.
  */
 document.addEventListener("DOMContentLoaded", () => {
+    // Initialisiert den AudioContext beim Laden des DOMs.
+    // Dies ist eine gängige Praxis, um die Web Audio API vorzubereiten.
+    initializeAudioContext(); 
     loadDropdowns();
 });
