@@ -435,7 +435,7 @@ h1 {
 }
 
 .collapsible-section[open] .section-content {
-    max-height: 500px; /* Genug Höhe, um den Inhalt anzuzeigen (Anpassung bei mehr Inhalt) */
+    max-height: 1000px; /* Genug Höhe, um den Inhalt anzuzeigen (Anpassung bei mehr Inhalt) */
     padding: 20px 25px; /* Padding beim Ausklappen */
 }
 
