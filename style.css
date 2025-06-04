@@ -429,7 +429,8 @@ h1 {
 /* Inhalt der aufklappbaren Sektion mit Animation */
 .collapsible-section .section-content {
     max-height: 0; /* Startwert für die Animation */
-    overflow: hidden; /* Inhalt verstecken, wenn eingeklappt */
+    overflow-y: auto; /* Vertikales Scrollen erlauben */
+    overflow-x: hidden; /* Horizontales Scrollen verhindern */
     padding: 0 25px; /* Initial kein vertikales Padding */
     transition: max-height 0.4s ease-out, padding 0.4s ease-out; /* Animation für max-height und padding */
 }
